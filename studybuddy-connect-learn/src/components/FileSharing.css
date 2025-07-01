@@ -1,0 +1,160 @@
+.file-sharing {
+  padding: 1rem;
+  background: #1a1a1a;
+  border-radius: 8px;
+  color: #fff;
+}
+
+.file-sharing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.file-sharing-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+.file-upload {
+  position: relative;
+}
+
+.file-input {
+  display: none;
+}
+
+.upload-button {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.upload-button:hover {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  transform: translateY(-1px);
+}
+
+.upload-button:disabled {
+  background: #4b5563;
+  cursor: not-allowed;
+}
+
+.error-message {
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  background: #dc2626;
+  color: white;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.upload-progress {
+  margin-bottom: 1rem;
+  background: #374151;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  height: 24px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  transition: width 0.3s ease;
+}
+
+.upload-progress span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 0.8rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.loading, .no-files {
+  text-align: center;
+  padding: 2rem;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  background: #27272a;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.file-item:hover {
+  background: #323232;
+}
+
+.file-icon {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+  min-width: 32px;
+  text-align: center;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  display: block;
+  color: #60a5fa;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-name:hover {
+  color: #93c5fd;
+  text-decoration: underline;
+}
+
+.file-meta {
+  display: flex;
+  gap: 0.5rem;
+  color: #9ca3af;
+  font-size: 0.8rem;
+}
+
+.delete-button {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 0.5rem;
+  font-size: 1rem;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  margin-left: 1rem;
+}
+
+.delete-button:hover {
+  opacity: 1;
+  transform: scale(1.1);
+} 

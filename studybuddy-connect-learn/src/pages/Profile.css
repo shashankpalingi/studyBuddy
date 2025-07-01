@@ -1,0 +1,242 @@
+.profile-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: #212121;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  color: #fff;
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 15px;
+}
+
+.profile-header h1 {
+  font-size: 28px;
+  margin: 0;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.profile-actions button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-family: monospace;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-btn {
+  background: rgba(52, 9, 121, 0.8);
+  color: white;
+}
+
+.logout-btn {
+  background: rgba(255, 77, 77, 0.2);
+  color: #ff4d4d;
+}
+
+.edit-btn:hover {
+  background: rgba(52, 9, 121, 1);
+}
+
+.logout-btn:hover {
+  background: rgba(255, 77, 77, 0.3);
+}
+
+.error-message {
+  background-color: rgba(255, 77, 77, 0.2);
+  color: #ff4d4d;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.success-message {
+  background-color: rgba(39, 174, 96, 0.2);
+  color: #2ecc71;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Profile View Styles */
+.profile-view {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+@media (min-width: 768px) {
+  .profile-view {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.profile-image-container {
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.profile-image {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(0, 212, 255, 0.6);
+}
+
+.profile-image-wrapper {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto;
+}
+
+.change-photo-btn {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.change-photo-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.profile-details {
+  flex-grow: 1;
+}
+
+.profile-details h2 {
+  font-size: 24px;
+  margin: 0 0 5px;
+}
+
+.profile-email {
+  color: #999;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.profile-section {
+  margin-bottom: 20px;
+}
+
+.profile-section h3 {
+  font-size: 18px;
+  margin: 0 0 10px;
+  color: rgba(0, 212, 255, 0.8);
+}
+
+.interests-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.interest-tag {
+  background: rgba(52, 9, 121, 0.6);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+/* Profile Form Styles */
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group label {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 10px;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 16px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: rgba(0, 212, 255, 0.6);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.cancel-btn, 
+.save-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-family: monospace;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+}
+
+.cancel-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.save-btn {
+  background: linear-gradient(90deg, rgba(2,0,36,0.8) 0%, rgba(52,9,121,0.8) 37%, rgba(0,212,255,0.8) 94%);
+  color: #fff;
+}
+
+.cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.save-btn:hover {
+  background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(52,9,121,1) 37%, rgba(0,212,255,1) 94%);
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+} 

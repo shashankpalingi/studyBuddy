@@ -1,0 +1,137 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is a room participant
+    function isRoomParticipant(roomId) {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/studyRooms/$(roomId)).data.participants.hasAny([request.auth.uid]);
+    }
+
+    // Helper function to check if user is an admin
+    function isAdmin() {
+      return request.auth != null && request.auth.uid in ['ny18fC2LknPurYpNpg3ga491c6s2'];  // Admin UID
+    }
+
+    // User profiles - each user can read public profiles, but only write their own
+    match /users/{userId} {
+      allow read;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Study Rooms
+    match /studyRooms/{roomId} {
+      // Anyone can read any study room
+      allow read: if request.auth != null;
+      
+      // Only authenticated users can create rooms
+      allow create: if request.auth != null;
+      
+      // Allow updates in the following cases:
+      // 1. Creator/admin can update any fields
+      // 2. Participants can join (add themselves to participants array)
+      // 3. Participants can leave (remove themselves from participants array)
+      allow update: if request.auth != null && (
+        // Case 1: Creator/admin can update any fields
+        (resource.data.createdBy == request.auth.uid || isAdmin()) ||
+        
+        // Case 2: Participants can join
+        (request.resource.data.participants.size() == resource.data.participants.size() + 1 &&
+         request.resource.data.participants.hasAll(resource.data.participants) &&
+         request.resource.data.participants.hasAny([request.auth.uid]) &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants', 'updatedAt'])) ||
+        
+        // Case 3: Participants can leave
+        (request.resource.data.participants.size() == resource.data.participants.size() - 1 &&
+         resource.data.participants.hasAll(request.resource.data.participants) &&
+         resource.data.participants.hasAny([request.auth.uid]) &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants', 'updatedAt']))
+      );
+      
+      // Allow deletion if user is creator, admin, or if it's a batch delete from admin page
+      allow delete: if request.auth != null && 
+                      (resource.data.createdBy == request.auth.uid ||
+                       isAdmin());
+      
+      // Participants subcollection
+      match /participants/{participantId} {
+        // Participants and room creator can read participant info
+        allow read: if request.auth != null && 
+                      (participantId == request.auth.uid || 
+                       get(/databases/$(database)/documents/studyRooms/$(roomId)).data.participants.hasAny([request.auth.uid]) ||
+                       get(/databases/$(database)/documents/studyRooms/$(roomId)).data.createdBy == request.auth.uid);
+        
+        // Users can only create/update/delete their own participant data or if they're the room creator
+        allow write: if request.auth != null && 
+                       (participantId == request.auth.uid || 
+                        get(/databases/$(database)/documents/studyRooms/$(roomId)).data.createdBy == request.auth.uid);
+      }
+      
+      // Messages subcollection - chat messages
+      match /messages/{messageId} {
+        // Room participants can read all messages
+        allow read: if isRoomParticipant(roomId);
+        
+        // Room participants can create messages
+        allow create: if isRoomParticipant(roomId) && request.resource.data.userId == request.auth.uid;
+        
+        // Users can only update or delete their own messages
+        allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      }
+      
+      // Tools subcollection - for study timer and other tools
+      match /tools/{toolId} {
+        allow read: if isRoomParticipant(roomId);
+        allow write: if isRoomParticipant(roomId);
+        
+        // Whiteboard shapes subcollection
+        match /shapes/{shapeId} {
+          allow read: if isRoomParticipant(roomId);
+          allow write: if isRoomParticipant(roomId);
+        }
+      }
+      
+      // Files subcollection - shared files
+      match /files/{fileId} {
+        // Room participants can read all files
+        allow read: if isRoomParticipant(roomId);
+        
+        // Room participants can upload files
+        allow create: if isRoomParticipant(roomId) && request.resource.data.uploadedBy == request.auth.uid;
+        
+        // Users can only delete their own files
+        allow delete: if request.auth != null && request.auth.uid == resource.data.uploadedBy;
+      }
+      
+      // Tasks subcollection - task management
+      match /tasks/{taskId} {
+        // Room participants can read all tasks
+        allow read: if isRoomParticipant(roomId);
+        
+        // Room participants can create tasks
+        allow create: if isRoomParticipant(roomId) && request.resource.data.createdBy == request.auth.uid;
+        
+        // Any participant can update task status and assignments
+        allow update: if isRoomParticipant(roomId);
+        
+        // Only task creator can delete tasks
+        allow delete: if request.auth != null && request.auth.uid == resource.data.createdBy;
+      }
+      
+      // Polls subcollection - polls and questions
+      match /polls/{pollId} {
+        // Room participants can read all polls
+        allow read: if isRoomParticipant(roomId);
+        
+        // Room participants can create polls
+        allow create: if isRoomParticipant(roomId) && request.resource.data.createdBy == request.auth.uid;
+        
+        // Any participant can update polls (for voting)
+        allow update: if isRoomParticipant(roomId);
+        
+        // Only poll creator can delete polls
+        allow delete: if request.auth != null && request.auth.uid == resource.data.createdBy;
+      }
+    }
+  }
+} 
