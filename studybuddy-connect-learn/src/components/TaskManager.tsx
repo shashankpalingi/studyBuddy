@@ -47,6 +47,12 @@ const TaskManager: React.FC<TaskManagerProps> = ({ roomId }) => {
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | 'todo' | 'in-progress' | 'done'>('all');
   const [filterAssigned, setFilterAssigned] = useState<'all' | 'me'>('all');
+  const [taskStats, setTaskStats] = useState({
+    total: 0,
+    completed: 0,
+    inProgress: 0,
+    todo: 0
+  });
   
   // Load tasks
   useEffect(() => {
@@ -90,6 +96,17 @@ const TaskManager: React.FC<TaskManagerProps> = ({ roomId }) => {
     
     return () => unsubscribe();
   }, [roomId, currentUser, filterStatus, filterAssigned]);
+  
+  // Calculate task statistics when tasks change
+  useEffect(() => {
+    const stats = {
+      total: tasks.length,
+      completed: tasks.filter(task => task.status === 'done').length,
+      inProgress: tasks.filter(task => task.status === 'in-progress').length,
+      todo: tasks.filter(task => task.status === 'todo').length
+    };
+    setTaskStats(stats);
+  }, [tasks]);
   
   // Add new task
   const handleAddTask = async (e: React.FormEvent) => {
@@ -255,6 +272,76 @@ const TaskManager: React.FC<TaskManagerProps> = ({ roomId }) => {
       </div>
       
       {error && <div className="tasks-error">{error}</div>}
+      
+      {/* Task Progress Dashboard */}
+      {!showNewTaskForm && tasks.length > 0 && (
+        <div className="task-progress-dashboard">
+          <div className="task-stats">
+            <div className="stat-item">
+              <div className="stat-label">Total</div>
+              <div className="stat-value">{taskStats.total}</div>
+            </div>
+            <div className="stat-item todo">
+              <div className="stat-label">To Do</div>
+              <div className="stat-value">{taskStats.todo}</div>
+            </div>
+            <div className="stat-item in-progress">
+              <div className="stat-label">In Progress</div>
+              <div className="stat-value">{taskStats.inProgress}</div>
+            </div>
+            <div className="stat-item done">
+              <div className="stat-label">Completed</div>
+              <div className="stat-value">{taskStats.completed}</div>
+            </div>
+          </div>
+          
+          <div className="progress-container">
+            <div className="progress-label">
+              {taskStats.total > 0 ? (
+                `${Math.round((taskStats.completed / taskStats.total) * 100)}% Complete`
+              ) : 'No tasks yet'}
+            </div>
+            <div className="progress-bar-wrapper">
+              <div 
+                className="progress-bar" 
+                style={{ 
+                  width: `${taskStats.total > 0 ? (taskStats.completed / taskStats.total) * 100 : 0}%` 
+                }}
+              ></div>
+            </div>
+            <div className="progress-segments">
+              {taskStats.total > 0 && (
+                <>
+                  {taskStats.todo > 0 && (
+                    <div 
+                      className="segment todo" 
+                      style={{ 
+                        width: `${(taskStats.todo / taskStats.total) * 100}%` 
+                      }}
+                    ></div>
+                  )}
+                  {taskStats.inProgress > 0 && (
+                    <div 
+                      className="segment in-progress" 
+                      style={{ 
+                        width: `${(taskStats.inProgress / taskStats.total) * 100}%` 
+                      }}
+                    ></div>
+                  )}
+                  {taskStats.completed > 0 && (
+                    <div 
+                      className="segment done" 
+                      style={{ 
+                        width: `${(taskStats.completed / taskStats.total) * 100}%` 
+                      }}
+                    ></div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       
       {showNewTaskForm && (
         <div className="new-task-form">

@@ -15,7 +15,8 @@ import {
   arrayUnion,
   Timestamp,
   orderBy,
-  getDoc
+  getDoc,
+  writeBatch
 } from 'firebase/firestore';
 import { uploadToCloudinary } from '../lib/cloudinary';
 import './Whiteboard.css';
@@ -133,24 +134,32 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ roomId }) => {
         const confirmedShapeIds = new Set(firebaseShapes.map(s => s.id));
         const mergedShapes: Shape[] = [];
         
+        // Add all Firebase shapes first
         firebaseShapes.forEach(fShape => {
           mergedShapes.push(fShape);
         });
 
+        // Then add any local shapes that don't exist in Firebase yet
         currentLocalShapes.forEach(localShape => {
           if (localShape.id && !confirmedShapeIds.has(localShape.id)) {
             mergedShapes.push(localShape);
           }
         });
 
-        const finalShapes = Array.from(new Map(mergedShapes.map(item => [item.id, item])).values());
+        // Remove duplicates by ID and sort by timestamp
+        const finalShapes = Array.from(
+          new Map(mergedShapes.map(item => [item.id || `temp-${item.timestamp}`, item])).values()
+        );
         finalShapes.sort((a, b) => a.timestamp - b.timestamp);
 
+        // Redraw the canvas with the updated shapes
         if (canvasRef.current && contextRef.current) {
           redrawCanvas(finalShapes);
         }
         return finalShapes;
       });
+    }, (error) => {
+      console.error("Error in Whiteboard snapshot listener:", error);
     });
 
     return () => unsubscribe();
@@ -344,7 +353,7 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ roomId }) => {
     try {
       const newShape: Omit<Shape, 'id'> = {
         type: currentTool,
-        points: currentPoints,
+        points: [...currentPoints], // Make a copy to ensure points are saved properly
         color: currentTool === 'eraser' ? '#ffffff' : currentColor,
         width: currentWidth,
         timestamp: Timestamp.now().toMillis(),
@@ -356,8 +365,14 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ roomId }) => {
       }
 
       const docRef = await addDoc(shapesCollection, newShape);
-      // Optimistically add the new shape to local state with its ID
-      setShapes(prevShapes => [...prevShapes, { id: docRef.id, ...newShape }]);
+      console.log(`Added new shape with ID: ${docRef.id}`);
+      
+      // Update the whiteboard timestamp
+      await updateDoc(whiteboardRef, {
+        lastUpdated: Timestamp.now()
+      });
+      
+      // Reset current points
       setCurrentPoints([]);
       setTextInput('');
     } catch (error) {

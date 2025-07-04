@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { doc, onSnapshot, updateDoc, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import './StudyTimer.css';
@@ -21,43 +21,75 @@ const StudyTimer: React.FC<StudyTimerProps> = ({ roomId }) => {
     endTime: null,
     duration: 25 // Default 25 minutes (Pomodoro)
   });
-  const [timeLeft, setTimeLeft] = useState<{ minutes: number; seconds: number }>({ minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState<{ minutes: number; seconds: number }>({ minutes: 25, seconds: 0 });
   const [selectedDuration, setSelectedDuration] = useState<number>(25);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Subscribe to timer updates
+  // Initialize and subscribe to timer updates
   useEffect(() => {
     if (!roomId) return;
 
     const timerRef = doc(db, 'studyRooms', roomId, 'tools', 'timer');
     
-         const unsubscribe = onSnapshot(timerRef, (snapshot) => {
-       try {
-         if (snapshot.exists()) {
-           const data = snapshot.data() as TimerState;
-           setTimerState(data);
-         } else {
-           // Initialize timer document if it doesn't exist
-           setDoc(timerRef, {
-             isRunning: false,
-             endTime: null,
-             duration: 25
-           }).catch(err => {
-             console.error('Error initializing timer:', err);
-           });
-         }
-         setIsLoading(false);
-       } catch (err) {
-         console.error('Error loading timer state:', err);
-         setError('Failed to load timer');
-         setIsLoading(false);
-       }
-     }, (err) => {
-       console.error('Error subscribing to timer updates:', err);
-       setError('Failed to subscribe to timer updates');
-       setIsLoading(false);
-     });
+    // First check if timer document exists, if not create it
+    const initTimer = async () => {
+      try {
+        const docSnap = await getDoc(timerRef);
+        
+        if (!docSnap.exists()) {
+          console.log('Creating new timer document');
+          await setDoc(timerRef, {
+            isRunning: false,
+            endTime: null,
+            duration: 25
+          });
+        }
+      } catch (err) {
+        console.error('Error initializing timer:', err);
+      }
+    };
+    
+    initTimer();
+    
+    // Then subscribe to timer updates
+    const unsubscribe = onSnapshot(timerRef, (snapshot) => {
+      try {
+        if (snapshot.exists()) {
+          const data = snapshot.data() as TimerState;
+          console.log('Timer update:', data);
+          setTimerState(data);
+          setSelectedDuration(data.duration);
+          
+          // Calculate initial time left if timer is running
+          if (data.isRunning && data.endTime) {
+            const now = Date.now();
+            const endTime = data.endTime;
+            
+            if (now < endTime) {
+              const timeLeftMs = endTime - now;
+              const minutes = Math.floor(timeLeftMs / 60000);
+              const seconds = Math.floor((timeLeftMs % 60000) / 1000);
+              setTimeLeft({ minutes, seconds });
+            } else {
+              setTimeLeft({ minutes: 0, seconds: 0 });
+            }
+          } else {
+            // Timer not running, show the full duration
+            setTimeLeft({ minutes: data.duration, seconds: 0 });
+          }
+        }
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Error processing timer state:', err);
+        setError('Failed to load timer');
+        setIsLoading(false);
+      }
+    }, (err) => {
+      console.error('Error subscribing to timer updates:', err);
+      setError('Failed to subscribe to timer updates');
+      setIsLoading(false);
+    });
 
     return () => unsubscribe();
   }, [roomId]);
@@ -117,6 +149,8 @@ const StudyTimer: React.FC<StudyTimerProps> = ({ roomId }) => {
         endTime,
         duration: selectedDuration
       });
+      
+      console.log(`Timer started: ${selectedDuration} minutes`);
     } catch (err) {
       console.error('Error starting timer:', err);
       setError('Failed to start timer');
@@ -132,6 +166,8 @@ const StudyTimer: React.FC<StudyTimerProps> = ({ roomId }) => {
         isRunning: false,
         endTime: null
       });
+      
+      console.log('Timer stopped');
     } catch (err) {
       console.error('Error stopping timer:', err);
       setError('Failed to stop timer');
@@ -185,6 +221,7 @@ const StudyTimer: React.FC<StudyTimerProps> = ({ roomId }) => {
             <button 
               className="start-btn"
               onClick={startTimer}
+              disabled={!currentUser}
             >
               Start Timer
             </button>
@@ -193,6 +230,7 @@ const StudyTimer: React.FC<StudyTimerProps> = ({ roomId }) => {
           <button 
             className="stop-btn"
             onClick={stopTimer}
+            disabled={!currentUser}
           >
             Stop Timer
           </button>

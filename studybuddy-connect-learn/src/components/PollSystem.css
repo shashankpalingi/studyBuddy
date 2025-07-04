@@ -3,15 +3,19 @@
   flex-direction: column;
   height: 100%;
   background-color: #212121;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .polls-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px;
+  padding: 0 15px;
   background-color: rgba(52, 9, 121, 0.2);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  height: 50px;
 }
 
 .polls-header h3 {
@@ -36,12 +40,13 @@
 }
 
 .polls-error {
-  margin: 10px 15px;
-  padding: 10px;
+  margin: 0;
+  padding: 10px 15px;
   background-color: rgba(255, 77, 77, 0.2);
   color: #ff4d4d;
-  border-radius: 4px;
+  border-radius: 0;
   font-size: 14px;
+  text-align: center;
 }
 
 .new-poll-form {
@@ -164,13 +169,13 @@
   padding: 15px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
 }
 
 .poll-item {
   background-color: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
-  padding: 15px;
+  padding: 10px 15px;
   border-left: 4px solid rgba(0, 212, 255, 0.6);
 }
 
@@ -242,7 +247,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 15px;
+  padding: 8px 12px;
   background-color: rgba(255, 255, 255, 0.1);
   border: none;
   border-radius: 4px;
@@ -325,6 +330,6 @@
 
 .polls-loading {
   text-align: center;
-  padding: 20px;
+  padding: 1rem;
   color: #aaa;
 } 

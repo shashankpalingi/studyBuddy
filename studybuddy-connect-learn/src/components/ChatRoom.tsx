@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import './ChatRoom.css';
+import { Video, Image, Phone } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -22,6 +23,7 @@ interface Message {
   userName: string;
   userPhotoURL: string | null;
   createdAt: Timestamp;
+  imageUrl?: string;
 }
 
 interface ChatRoomProps {
@@ -35,6 +37,10 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showVideoCall, setShowVideoCall] = useState(false);
+  const [isInVideoCall, setIsInVideoCall] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Load messages
   useEffect(() => {
@@ -107,62 +113,179 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentUser || !roomId) return;
+    
+    // Only accept images
+    if (!file.type.startsWith('image/')) {
+      setError('Only image files are supported.');
+      return;
+    }
+    
+    try {
+      setUploadingImage(true);
+      
+      // Simple placeholder for upload - in a real app, upload to Cloudinary or Firebase Storage
+      // For now we'll use a data URL for the demo
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const imageUrl = event.target?.result as string;
+        
+        // Send message with image
+        const messagesRef = collection(db, 'studyRooms', roomId, 'messages');
+        await addDoc(messagesRef, {
+          text: message || '📷 Image',
+          userId: currentUser.uid,
+          userName: userProfile?.displayName || 'Anonymous',
+          userPhotoURL: userProfile?.photoURL || null,
+          createdAt: serverTimestamp(),
+          imageUrl
+        });
+        
+        setMessage('');
+        setUploadingImage(false);
+      };
+      
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('Error uploading image:', err);
+      setError('Failed to upload image');
+      setUploadingImage(false);
+    }
+  };
+
+  const handleVideoCall = () => {
+    setIsInVideoCall(true);
+    setShowVideoCall(true);
+  };
+
+  const endVideoCall = () => {
+    setIsInVideoCall(false);
+    setShowVideoCall(false);
+  };
+
   return (
     <div className="chat-container">
       <div className="chat-header">
         <h2>Group Chat</h2>
+        <div className="chat-actions">
+          <button 
+            className="chat-action-btn"
+            onClick={handleVideoCall}
+            title="Start video call"
+          >
+            <Video size={18} />
+          </button>
+        </div>
       </div>
       
-      <div className="chat-messages">
-        {isLoading ? (
-          <div className="chat-loading">Loading messages...</div>
-        ) : error ? (
-          <div className="chat-error">{error}</div>
-        ) : messages.length === 0 ? (
-          <div className="chat-empty">No messages yet. Start the conversation!</div>
-        ) : (
-          messages.map((msg) => (
-            <div 
-              key={msg.id} 
-              className={`chat-message ${msg.userId === currentUser?.uid ? 'own-message' : ''}`}
-            >
-              <div className="message-avatar">
-                {msg.userPhotoURL ? (
-                  <img src={msg.userPhotoURL} alt={msg.userName} />
-                ) : (
-                  <div className="default-avatar">
-                    {msg.userName.charAt(0)}
-                  </div>
-                )}
-              </div>
-              <div className="message-content">
-                <div className="message-header">
-                  <span className="message-author">{msg.userName}</span>
-                  <span className="message-time">{formatTime(msg.createdAt)}</span>
-                </div>
-                <div className="message-text">{msg.text}</div>
+      {isInVideoCall && (
+        <div className="video-call-overlay">
+          <div className="video-call-header">
+            <h3>Video Call</h3>
+            <button className="end-call-btn" onClick={endVideoCall}>
+              End Call
+            </button>
+          </div>
+          <div className="video-call-container">
+            {/* Video call implementation would go here */}
+            <div className="video-placeholder">
+              <div className="video-message">
+                <Phone size={48} />
+                <p>Video call feature coming soon!</p>
+                <p>This is a placeholder UI for the video call functionality.</p>
               </div>
             </div>
-          ))
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+          </div>
+        </div>
+      )}
       
-      <form className="chat-input-form" onSubmit={handleSendMessage}>
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type your message..."
-          disabled={!currentUser}
-        />
-        <button 
-          type="submit" 
-          disabled={!message.trim() || !currentUser}
-        >
-          Send
-        </button>
-      </form>
+      {!isInVideoCall && (
+        <>
+          <div className="chat-messages">
+            {isLoading ? (
+              <div className="chat-loading">Loading messages...</div>
+            ) : error ? (
+              <div className="chat-error">{error}</div>
+            ) : messages.length === 0 ? (
+              <div className="chat-empty">No messages yet. Start the conversation!</div>
+            ) : (
+              messages.map((msg) => (
+                <div 
+                  key={msg.id} 
+                  className={`chat-message ${msg.userId === currentUser?.uid ? 'own-message' : ''}`}
+                >
+                  <div className="message-avatar">
+                    {msg.userPhotoURL ? (
+                      <img src={msg.userPhotoURL} alt={msg.userName} />
+                    ) : (
+                      <div className="default-avatar">
+                        {msg.userName.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="message-content">
+                    <div className="message-header">
+                      <span className="message-author">{msg.userName}</span>
+                      <span className="message-time">{formatTime(msg.createdAt)}</span>
+                    </div>
+                    <div className="message-text">{msg.text}</div>
+                    {msg.imageUrl && (
+                      <div className="message-image">
+                        <img src={msg.imageUrl} alt="Shared" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+          
+          <form className="chat-input-form" onSubmit={handleSendMessage}>
+            <button 
+              className="chat-action-btn attach-button"
+              onClick={handleImageClick}
+              title="Attach image"
+              type="button"
+            >
+              <Image size={20} />
+            </button>
+            <input
+              type="text"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Type your message..."
+              disabled={!currentUser || uploadingImage}
+            />
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              style={{ display: 'none' }} 
+              accept="image/*"
+              onChange={handleFileChange}
+            />
+            <button 
+              className="chat-action-btn emoji-button"
+              title="Emoji"
+              type="button"
+            >
+              😀
+            </button>
+            <button 
+              type="submit" 
+              disabled={!message.trim() || !currentUser || uploadingImage}
+            >
+              {uploadingImage ? 'Uploading...' : 'Send'}
+            </button>
+          </form>
+        </>
+      )}
     </div>
   );
 };

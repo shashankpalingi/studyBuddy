@@ -35,9 +35,37 @@ const CollaborativeNotes: React.FC<CollaborativeNotesProps> = ({ roomId }) => {
   // For debouncing saves
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
+  // First, initialize the notes document if it doesn't exist
+  useEffect(() => {
+    if (!roomId || !currentUser) return;
+    
+    const initializeNotes = async () => {
+      const notesRef = doc(db, 'studyRooms', roomId, 'tools', 'notes');
+      
+      try {
+        const docSnap = await getDoc(notesRef);
+        
+        if (!docSnap.exists()) {
+          console.log('Creating new notes document');
+          await setDoc(notesRef, {
+            content: '# Study Notes\n\nUse this space to take collaborative notes with your study group.\n\n## Key Points\n\n- Point 1\n- Point 2\n- Point 3',
+            lastUpdatedBy: currentUser.uid,
+            lastUpdatedAt: Timestamp.now(),
+            editorIds: [currentUser.uid]
+          });
+        }
+      } catch (err) {
+        console.error('Error initializing notes:', err);
+        setError('Failed to initialize notes. Please refresh the page and try again.');
+      }
+    };
+    
+    initializeNotes();
+  }, [roomId, currentUser]);
+  
   // Load notes content
   useEffect(() => {
-    if (!roomId) return;
+    if (!roomId || !currentUser) return;
     
     setIsLoading(true);
     
@@ -48,23 +76,16 @@ const CollaborativeNotes: React.FC<CollaborativeNotesProps> = ({ roomId }) => {
       try {
         if (snapshot.exists()) {
           const data = snapshot.data() as NotesData;
-          setNotesContent(data.content);
+          setNotesContent(data.content || '');
           setActiveEditors(data.editorIds || []);
           if (data.lastUpdatedAt) {
             setLastSaved(data.lastUpdatedAt.toDate());
           }
+          setIsLoading(false);
         } else {
-          // Initialize notes document if it doesn't exist
-          setDoc(notesRef, {
-            content: '# Study Notes\n\nUse this space to take collaborative notes with your study group.\n\n## Key Points\n\n- Point 1\n- Point 2\n- Point 3',
-            lastUpdatedBy: currentUser?.uid || 'system',
-            lastUpdatedAt: Timestamp.now(),
-            editorIds: []
-          }).catch(err => {
-            console.error('Error initializing notes:', err);
-          });
+          // If the document doesn't exist (rare case), it will be created by the initialization effect
+          setIsLoading(true);
         }
-        setIsLoading(false);
       } catch (err) {
         console.error('Error loading notes:', err);
         setError('Failed to load notes');
@@ -159,12 +180,31 @@ const CollaborativeNotes: React.FC<CollaborativeNotesProps> = ({ roomId }) => {
         lastUpdatedAt: Timestamp.now()
       });
       
+      console.log('Notes saved successfully');
       setLastSaved(new Date());
       setIsSaving(false);
     } catch (err) {
       console.error('Error saving notes:', err);
       setError('Failed to save notes');
       setIsSaving(false);
+      
+      // Try to create the document if it doesn't exist
+      try {
+        const docSnap = await getDoc(doc(db, 'studyRooms', roomId, 'tools', 'notes'));
+        if (!docSnap.exists()) {
+          await setDoc(doc(db, 'studyRooms', roomId, 'tools', 'notes'), {
+            content: content,
+            lastUpdatedBy: currentUser.uid,
+            lastUpdatedAt: Timestamp.now(),
+            editorIds: [currentUser.uid]
+          });
+          setLastSaved(new Date());
+          setIsSaving(false);
+          setError('');
+        }
+      } catch (fallbackErr) {
+        console.error('Error in fallback save:', fallbackErr);
+      }
     }
   };
   
@@ -201,8 +241,13 @@ const CollaborativeNotes: React.FC<CollaborativeNotesProps> = ({ roomId }) => {
     return <div className="notes-loading">Loading notes...</div>;
   }
   
-  if (error) {
-    return <div className="notes-error">{error}</div>;
+  if (error && !notesContent) {
+    return (
+      <div className="notes-error">
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()}>Retry</button>
+      </div>
+    );
   }
   
   return (
@@ -213,6 +258,7 @@ const CollaborativeNotes: React.FC<CollaborativeNotesProps> = ({ roomId }) => {
           <span className="save-status">
             {isSaving ? 'Saving...' : (lastSaved ? `Last saved: ${formatTime(lastSaved)}` : '')}
           </span>
+          {error && <span className="save-error">Error: {error}</span>}
         </div>
         <div className="notes-controls">
           {/* Future feature: Add formatting controls here */}

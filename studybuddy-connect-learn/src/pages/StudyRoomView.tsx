@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import AppHeader from '../components/AppHeader';
 import ChatRoom from '../components/ChatRoom';
 import StudyTimer from '../components/StudyTimer';
 import CollaborativeNotes from '../components/CollaborativeNotes';
@@ -9,6 +8,8 @@ import FileSharing from '../components/FileSharing';
 import TaskManager from '../components/TaskManager';
 import PollSystem from '../components/PollSystem';
 import Whiteboard from '../components/Whiteboard';
+import YoutubeWatchTogether from '../components/YoutubeWatchTogether/YoutubeWatchTogether';
+
 import { 
   getStudyRoomById as getStudyRoom, 
   getRoomParticipants,
@@ -18,6 +19,9 @@ import {
 } from '../services/studyRoomService';
 import { StudyRoom } from '../types/studyRoom';
 import './StudyRoomView.css';
+
+
+type Feature = 'notes' | 'files' | 'timer' | 'tasks' | 'polls' | 'whiteboard' | 'youtube' | 'chat';
 
 const StudyRoomView: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -30,7 +34,19 @@ const StudyRoomView: React.FC = () => {
   const [error, setError] = useState('');
   const [isLeaving, setIsLeaving] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const [activeToolTab, setActiveToolTab] = useState<'chat' | 'whiteboard' | 'notes' | 'files' | 'tasks' | 'polls'>('chat');
+  const [activeFeature, setActiveFeature] = useState<Feature>('notes');
+  const [sidebarMinimized, setSidebarMinimized] = useState(false);
+  const [messages, setMessages] = useState<Array<{
+    content: string;
+    sender: string;
+    timestamp: Date;
+  }>>([]);
+  const [studyMaterials, setStudyMaterials] = useState<Array<{
+    name: string;
+    content: string;
+    type: string;
+  }>>([]);
+
   
   useEffect(() => {
     const fetchRoomData = async () => {
@@ -47,27 +63,31 @@ const StudyRoomView: React.FC = () => {
           return;
         }
         
-        // If the room is private and the user is not a participant, deny access
-        if (roomData.isPrivate && !roomData.participants.includes(currentUser.uid)) {
-          setError('This is a private room. Please join using the correct join code from the Study Rooms page.');
-          navigate('/study-rooms', { state: { error: 'This is a private room. Please join using the correct join code.' } });
-          return;
-        }
-        
         // Check if user is a participant and add them if not
         if (!roomData.participants.includes(currentUser.uid)) {
           console.log(`User ${currentUser.uid} not in participants for room ${roomId}. Adding...`);
+          
+          // If the room is private, check if they came with correct join code before adding
+          if (roomData.isPrivate) {
+            // For now, we'll allow them to see the "You don't have access" error
+            // In a real app, you might want to redirect them to a page where they can enter a join code
+            setError('This is a private room. Please join using the correct join code from the Study Rooms page.');
+            setIsLoading(false);
+            return;
+          }
+          
           await updateStudyRoom(roomId, {
             participants: [...roomData.participants, currentUser.uid]
           });
+          
           // Re-fetch room data to get updated participant list
           const updatedRoomData = await getStudyRoom(roomId);
           if (updatedRoomData) {
             setRoom(updatedRoomData);
           }
+        } else {
+          setRoom(roomData);
         }
-        
-        setRoom(roomData);
         
         // Fetch room participants
         const participantsData = await getRoomParticipants(roomId);
@@ -135,10 +155,44 @@ const StudyRoomView: React.FC = () => {
   
   const isCreator = currentUser && room && room.createdBy === currentUser.uid;
   
+  const toggleSidebar = () => {
+    setSidebarMinimized(!sidebarMinimized);
+  };
+  
+  const renderFeatureContent = () => {
+    
+    switch (activeFeature) {
+      case 'notes':
+        return <CollaborativeNotes roomId={roomId || ''} />;
+      case 'chat':
+        return <ChatRoom roomId={roomId || ''} />;
+      case 'files':
+        return <FileSharing roomId={roomId || ''} />;
+      case 'timer':
+        return <StudyTimer />;
+      case 'tasks':
+        return <TaskManager roomId={roomId || ''} />;
+      case 'polls':
+        return <PollSystem roomId={roomId || ''} />;
+      case 'whiteboard':
+        return <Whiteboard roomId={roomId || ''} />;
+      case 'youtube':
+        return <YoutubeWatchTogether roomId={roomId || ''} />;
+      default:
+        return <CollaborativeNotes roomId={roomId || ''} />;
+    }
+  };
+  
   if (isLoading) {
     return (
       <div className="study-room-view-container">
-        <AppHeader />
+        <div className="custom-header">
+          <div className="header-logo">
+            <Link to="/">
+              <img src="/studybuddylogo.png" alt="StudyBuddy Logo" className="logo" />
+            </Link>
+          </div>
+        </div>
         <div className="loading-state">
           <div className="spinner"></div>
           <p>Loading study room...</p>
@@ -150,7 +204,13 @@ const StudyRoomView: React.FC = () => {
   if (error || !room) {
     return (
       <div className="study-room-view-container">
-        <AppHeader />
+        <div className="custom-header">
+          <div className="header-logo">
+            <Link to="/">
+              <img src="/studybuddylogo.png" alt="StudyBuddy Logo" className="logo" />
+            </Link>
+          </div>
+        </div>
         <div className="error-state">
           <h2>Oops!</h2>
           <p>{error || 'Something went wrong'}</p>
@@ -165,168 +225,125 @@ const StudyRoomView: React.FC = () => {
     );
   }
   
+  // Simplified inline video call handling
+  // No separate fullscreen mode needed, all handled through renderFeatureContent
+  
   return (
-    <div className="study-room-view-container">
-      <AppHeader />
-      
-      <div className="study-room-content">
-        <div className="room-header">
-          <div>
-            <h1>{room.name}</h1>
-            <p className="room-subject">{room.subject}</p>
-          </div>
-          
-          <div className="room-actions">
-            {isCreator ? (
-              <button 
-                className="close-btn"
-                onClick={handleCloseRoom}
-                disabled={isClosing}
-              >
-                {isClosing ? 'Closing...' : 'Close Room'}
-              </button>
-            ) : (
-              <button 
-                className="leave-btn"
-                onClick={handleLeaveRoom}
-                disabled={isLeaving}
-              >
-                {isLeaving ? 'Leaving...' : 'Leave Room'}
-              </button>
-            )}
-          </div>
+    <div className="min-h-screen bg-[#1a1a1a]">
+      {/* Custom Header */}
+      <div className="custom-header">
+        <div className="header-logo">
+          <Link to="/">
+            <img src="/studybuddylogo.png" alt="StudyBuddy Logo" className="logo" />
+          </Link>
         </div>
         
-        {error && <div className="error-message">{error}</div>}
-        
-        <div className="room-body">
-          <div className="room-main">
-            <div className="room-info-card">
-              <h2>About this Study Room</h2>
-              <p className="room-description">{room.description || 'No description provided.'}</p>
-              
-              <div className="room-meta">
-                <div className="meta-item">
-                  <h3>Status</h3>
-                  <p>{room.status === 'active' ? 'Active' : 'Closed'}</p>
-                </div>
-                
-                <div className="meta-item">
-                  <h3>Visibility</h3>
-                  <p>{room.isPrivate ? 'Private' : 'Public'}</p>
-                </div>
-                
-                {room.isPrivate && room.joinCode && (
-                  <div className="meta-item">
-                    <h3>Join Code</h3>
-                    <p className="join-code">{room.joinCode}</p>
-                  </div>
-                )}
-                
-                <div className="meta-item">
-                  <h3>Created By</h3>
-                  <p>{room.creatorName}</p>
-                </div>
-              </div>
-              
-              {room.tags && room.tags.length > 0 && (
-                <div className="room-tags">
-                  <h3>Tags</h3>
-                  <div className="tags-list">
-                    {room.tags.map((tag, index) => (
-                      <span key={index} className="room-tag">{tag}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="study-tools">
-              <h2>Study Tools</h2>
-              
-              <div className="tools-container">
-                <div className="tools-tabs">
-                  <button 
-                    className={`tool-tab ${activeToolTab === 'chat' ? 'active' : ''}`}
-                    onClick={() => setActiveToolTab('chat')}
-                  >
-                    Chat
-                  </button>
-                  <button 
-                    className={`tool-tab ${activeToolTab === 'notes' ? 'active' : ''}`}
-                    onClick={() => setActiveToolTab('notes')}
-                  >
-                    Notes
-                  </button>
-                  <button 
-                    className={`tool-tab ${activeToolTab === 'whiteboard' ? 'active' : ''}`}
-                    onClick={() => setActiveToolTab('whiteboard')}
-                  >
-                    Whiteboard
-                  </button>
-                  <button 
-                    className={`tool-tab ${activeToolTab === 'files' ? 'active' : ''}`}
-                    onClick={() => setActiveToolTab('files')}
-                  >
-                    Files
-                  </button>
-                  <button 
-                    className={`tool-tab ${activeToolTab === 'tasks' ? 'active' : ''}`}
-                    onClick={() => setActiveToolTab('tasks')}
-                  >
-                    Tasks
-                  </button>
-                  <button 
-                    className={`tool-tab ${activeToolTab === 'polls' ? 'active' : ''}`}
-                    onClick={() => setActiveToolTab('polls')}
-                  >
-                    Polls
-                  </button>
-                </div>
-                
-                <div className="tool-content">
-                  {activeToolTab === 'chat' && <ChatRoom roomId={roomId!} />}
-                  {activeToolTab === 'notes' && <CollaborativeNotes roomId={roomId!} />}
-                  {activeToolTab === 'whiteboard' && <Whiteboard roomId={roomId!} />}
-                  {activeToolTab === 'files' && <FileSharing roomId={roomId!} />}
-                  {activeToolTab === 'tasks' && <TaskManager roomId={roomId!} />}
-                  {activeToolTab === 'polls' && <PollSystem roomId={roomId!} />}
-                </div>
-              </div>
-            </div>
+        </div>
+
+      
+      
+      <div className="flex h-[calc(100vh-64px)]">
+        {/* Sidebar with minimize button */}
+        <div className={`sidebar ${sidebarMinimized ? 'minimized' : ''}`}>
+          <div className="sidebar-header">
+            <h2 className={sidebarMinimized ? 'hidden' : 'text-xl font-bold text-white mb-4'}>Study Tools</h2>
+            <button className="minimize-btn" onClick={toggleSidebar}>
+              {sidebarMinimized ? '→' : '←'}
+            </button>
           </div>
-          
-          <div className="room-sidebar">
-            <div className="participants-panel">
-              <h2>Participants ({participants.length}/{room.maxParticipants})</h2>
-              <div className="participants-list">
-                {participants.map((participant) => (
-                  <div key={participant.userId} className="participant-item">
-                    <div className="participant-avatar">
-                      {participant.photoURL ? (
-                        <img src={participant.photoURL} alt={participant.displayName} />
-                      ) : (
-                        <div className="default-avatar">
-                          {participant.displayName?.charAt(0) || '?'}
-                        </div>
-                      )}
-                    </div>
-                    <div className="participant-info">
-                      <p className="participant-name">
-                        {participant.displayName}
-                        {participant.role === 'host' && (
-                          <span className="host-badge">Host</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            {/* Study Timer */}
-            <StudyTimer roomId={roomId!} />
+          <nav className="sidebar-nav">
+
+            <button
+              onClick={() => setActiveFeature('notes')}
+              className={`sidebar-btn ${activeFeature === 'notes' ? 'active' : ''}`}
+              title="Collaborative Notes"
+            >
+              <span className="icon">📝</span>
+              {!sidebarMinimized && <span className="label">Collaborative Notes</span>}
+            </button>
+            <button
+              onClick={() => setActiveFeature('chat')}
+              className={`sidebar-btn ${activeFeature === 'chat' ? 'active' : ''}`}
+              title="Chat"
+            >
+              <span className="icon">💬</span>
+              {!sidebarMinimized && <span className="label">Chat</span>}
+            </button>
+            <button
+              onClick={() => setActiveFeature('files')}
+              className={`sidebar-btn ${activeFeature === 'files' ? 'active' : ''}`}
+              title="Files"
+            >
+              <span className="icon">📁</span>
+              {!sidebarMinimized && <span className="label">Files</span>}
+            </button>
+            <button
+              onClick={() => setActiveFeature('timer')}
+              className={`sidebar-btn ${activeFeature === 'timer' ? 'active' : ''}`}
+              title="Study Timer"
+            >
+              <span className="icon">⏱️</span>
+              {!sidebarMinimized && <span className="label">Study Timer</span>}
+            </button>
+            <button
+              onClick={() => setActiveFeature('tasks')}
+              className={`sidebar-btn ${activeFeature === 'tasks' ? 'active' : ''}`}
+              title="Tasks"
+            >
+              <span className="icon">✅</span>
+              {!sidebarMinimized && <span className="label">Tasks</span>}
+            </button>
+            <button
+              onClick={() => setActiveFeature('polls')}
+              className={`sidebar-btn ${activeFeature === 'polls' ? 'active' : ''}`}
+              title="Polls"
+            >
+              <span className="icon">📊</span>
+              {!sidebarMinimized && <span className="label">Polls</span>}
+            </button>
+            <button
+              onClick={() => setActiveFeature('whiteboard')}
+              className={`sidebar-btn ${activeFeature === 'whiteboard' ? 'active' : ''}`}
+              title="Whiteboard"
+            >
+              <span className="icon">🎨</span>
+              {!sidebarMinimized && <span className="label">Whiteboard</span>}
+            </button>
+            <button
+              onClick={() => setActiveFeature('youtube')}
+              className={`sidebar-btn ${activeFeature === 'youtube' ? 'active' : ''}`}
+              title="Watch Together"
+            >
+              <span className="icon">📺</span>
+              {!sidebarMinimized && <span className="label">Watch Together</span>}
+            </button>
+          </nav>
+
+          <div className={`sidebar-footer ${sidebarMinimized ? 'minimized' : ''}`}>
+            <button
+              onClick={handleLeaveRoom}
+              className="sidebar-action-btn leave-btn"
+              disabled={isLeaving}
+              title="Leave Room"
+            >
+              <span className="icon">👋</span>
+              {!sidebarMinimized && <span>{isLeaving ? 'Leaving...' : 'Leave Room'}</span>}
+            </button>
+            <button
+              onClick={handleCloseRoom}
+              className="sidebar-action-btn close-btn"
+              disabled={isClosing}
+              title="Close Room"
+            >
+              <span className="icon">🚪</span>
+              {!sidebarMinimized && <span>{isClosing ? 'Closing...' : 'Close Room'}</span>}
+            </button>
           </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto h-full">
+          {renderFeatureContent()}
         </div>
       </div>
     </div>

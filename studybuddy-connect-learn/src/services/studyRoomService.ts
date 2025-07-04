@@ -379,4 +379,90 @@ export {
   getRoomParticipants,
   getRoomsCreatedByUser,
   deleteAllStudyRooms
+};
+
+export const studyRoomService = {
+  async getRoomContent(roomId: string) {
+    try {
+      console.log('Getting room content for roomId:', roomId);
+      
+      // Get chat messages
+      const messagesRef = collection(db, 'studyRooms', roomId, 'messages');
+      const messagesQuery = query(messagesRef, orderBy('createdAt', 'asc'));
+      const messagesSnapshot = await getDocs(messagesQuery);
+      const messages = messagesSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          sender: data.userName || 'User',
+          content: data.text || '',
+          timestamp: data.createdAt
+        };
+      });
+      console.log(`Retrieved ${messages.length} messages`);
+
+      // Get collaborative notes
+      const notesRef = collection(db, 'studyRooms', roomId, 'notes');
+      const notesQuery = query(notesRef, orderBy('createdAt', 'desc'));
+      const notesSnapshot = await getDocs(notesQuery);
+      let notes = [];
+      
+      if (!notesSnapshot.empty) {
+        notes = notesSnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            content: data.content || '',
+            lastUpdatedBy: data.lastUpdatedBy || data.createdBy,
+            lastUpdatedAt: data.updatedAt || data.createdAt
+          };
+        });
+        console.log(`Retrieved ${notes.length} notes`);
+      } else {
+        console.log('No notes found');
+        
+        // Try the old path as fallback (tools/notes)
+        const oldNotesRef = doc(db, 'studyRooms', roomId, 'tools', 'notes');
+        const oldNotesSnapshot = await getDoc(oldNotesRef);
+        
+        if (oldNotesSnapshot.exists()) {
+          const noteData = oldNotesSnapshot.data();
+          notes = [{
+            id: 'notes',
+            content: noteData.content || '',
+            lastUpdatedBy: noteData.lastUpdatedBy,
+            lastUpdatedAt: noteData.lastUpdatedAt
+          }];
+          console.log('Retrieved notes from old path');
+        } else {
+          console.log('No notes document found in old path either');
+        }
+      }
+
+      // Get room details for context
+      const roomRef = doc(db, 'studyRooms', roomId);
+      const roomSnapshot = await getDoc(roomRef);
+      let topic = '';
+      let subject = '';
+      
+      if (roomSnapshot.exists()) {
+        const roomData = roomSnapshot.data();
+        topic = roomData.name || '';
+        subject = roomData.subject || roomData.category || '';
+        console.log('Retrieved room details:', { topic, subject });
+      } else {
+        console.log('Room document not found');
+      }
+
+      return {
+        messages,
+        notes,
+        topic,
+        subject
+      };
+    } catch (error) {
+      console.error('Error fetching room content:', error);
+      throw error;
+    }
+  }
 }; 

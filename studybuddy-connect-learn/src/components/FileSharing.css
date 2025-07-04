@@ -1,21 +1,28 @@
 .file-sharing {
-  padding: 1rem;
+  padding: 0;
   background: #1a1a1a;
   border-radius: 8px;
   color: #fff;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .file-sharing-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  padding: 10px 15px;
+  margin-bottom: 0;
+  background-color: rgba(52, 9, 121, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  height: 50px;
 }
 
 .file-sharing-header h2 {
   margin: 0;
-  font-size: 1.5rem;
-  color: #fff;
+  font-size: 18px;
+  color: rgba(0, 212, 255, 0.9);
 }
 
 .file-upload {
@@ -26,40 +33,46 @@
   display: none;
 }
 
-.upload-button {
+.file-upload .upload-button {
   display: inline-block;
-  padding: 0.5rem 1rem;
-  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  padding: 8px 15px;
+  background: linear-gradient(90deg, rgba(52,9,121,1) 0%, rgba(0,212,255,1) 100%);
   color: white;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
   transition: all 0.2s ease;
 }
 
-.upload-button:hover {
-  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+.file-upload .upload-button:hover {
+  background: linear-gradient(90deg, rgba(52,9,121,0.9) 0%, rgba(0,212,255,0.9) 100%);
   transform: translateY(-1px);
 }
 
-.upload-button:disabled {
+.file-upload .upload-button:disabled {
   background: #4b5563;
   cursor: not-allowed;
 }
 
-.error-message {
-  padding: 0.75rem;
-  margin-bottom: 1rem;
+.error-message,
+.success-message {
+  padding: 10px 15px;
+  margin-bottom: 0;
   background: #dc2626;
   color: white;
-  border-radius: 6px;
+  border-radius: 0;
   font-size: 0.9rem;
+  text-align: center;
+}
+
+.success-message {
+  background-color: #10B981;
 }
 
 .upload-progress {
-  margin-bottom: 1rem;
+  margin-bottom: 0;
+  border-radius: 0;
   background: #374151;
-  border-radius: 6px;
   overflow: hidden;
   position: relative;
   height: 24px;
@@ -82,14 +95,17 @@
 }
 
 .files-list {
+  flex: 1;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 10px;
+  padding: 15px;
 }
 
 .loading, .no-files {
   text-align: center;
-  padding: 2rem;
+  padding: 1rem;
   color: #9ca3af;
   font-size: 0.9rem;
 }
@@ -97,7 +113,7 @@
 .file-item {
   display: flex;
   align-items: center;
-  padding: 0.75rem;
+  padding: 10px 15px;
   background: #27272a;
   border-radius: 6px;
   transition: background-color 0.2s ease;
@@ -108,9 +124,9 @@
 }
 
 .file-icon {
-  font-size: 1.5rem;
-  margin-right: 1rem;
-  min-width: 32px;
+  font-size: 1.2rem;
+  margin-right: 10px;
+  min-width: 24px;
   text-align: center;
 }
 
@@ -124,7 +140,7 @@
   color: #60a5fa;
   text-decoration: none;
   font-weight: 500;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.15rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -137,9 +153,9 @@
 
 .file-meta {
   display: flex;
-  gap: 0.5rem;
+  gap: 5px;
   color: #9ca3af;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
 .delete-button {
@@ -147,14 +163,21 @@
   border: none;
   color: #ef4444;
   cursor: pointer;
-  padding: 0.5rem;
-  font-size: 1rem;
+  padding: 4px;
+  font-size: 0.9rem;
   opacity: 0.7;
   transition: all 0.2s ease;
-  margin-left: 1rem;
+  margin-left: 10px;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .delete-button:hover {
   opacity: 1;
   transform: scale(1.1);
+  background-color: rgba(255, 0, 0, 0.1);
 } 
