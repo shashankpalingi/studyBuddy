@@ -135,17 +135,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Google sign-in using popup (more reliable than redirect)
+  // Update the loginWithGoogle function
   const loginWithGoogle = async () => {
     try {
       clearError();
+      // Use the pre-configured provider from firebase.ts
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({
         prompt: 'select_account'
       });
       
+      console.log("Attempting Google sign-in...");
+      
       // Use signInWithPopup instead of redirect for better reliability
       const result = await signInWithPopup(auth, provider);
+      console.log("Google sign-in successful");
+      
       const user = result.user;
       
       // Create or update user profile
@@ -156,7 +161,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return result;
     } catch (error: any) {
       console.error('Google sign-in error:', error);
-      setError(error.message || 'Failed to sign in with Google');
+      
+      // More specific error messages
+      let userFriendlyMessage = 'Failed to sign in with Google. Please try again.';
+      if (error.code === 'auth/popup-closed-by-user') {
+        userFriendlyMessage = 'Sign-in was cancelled. Please try again.';
+      } else if (error.code === 'auth/popup-blocked') {
+        userFriendlyMessage = 'Pop-up was blocked by your browser. Please allow pop-ups for this site.';
+      }
+      
+      setError(userFriendlyMessage);
       throw error;
     }
   };

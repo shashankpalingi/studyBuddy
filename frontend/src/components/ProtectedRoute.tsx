@@ -1,32 +1,47 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { ReactNode, useEffect, useState } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children: ReactNode;
+  adminOnly?: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { currentUser, loading } = useAuth();
-
-  // Show loading state while auth state is being determined
+const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) => {
+  const { currentUser, loading, userProfile } = useAuth();
+  const location = useLocation();
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  
+  // In development mode, allow access without authentication
+  const isDevelopment = import.meta.env.DEV;
+  const bypassAuth = isDevelopment && true; // Change to false when you want to test authentication
+  
+  useEffect(() => {
+    if (userProfile) {
+      setIsAdmin(userProfile.isAdmin || false);
+    }
+  }, [userProfile]);
+  
   if (loading) {
+    // Show a loading spinner or skeleton while checking authentication
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="spinner"></div>
-          <p>Loading...</p>
-        </div>
+      <div className="flex h-screen w-full items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  // Redirect to login if not authenticated
-  if (!currentUser) {
-    return <Navigate to="/auth" />;
+  // For admin routes, check if user is an admin
+  if (adminOnly && !isAdmin && !bypassAuth) {
+    return <Navigate to="/not-found" state={{ from: location }} replace />;
   }
 
-  // Render children if authenticated
+  // If not authenticated and not bypassing auth, redirect to login page
+  if (!currentUser && !bypassAuth) {
+    return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  // User is authenticated, or we're bypassing auth in development
   return <>{children}</>;
 };
 

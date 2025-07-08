@@ -91,7 +91,9 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
+      console.log("Starting Google sign-in process...");
       await loginWithGoogle();
+      console.log("Google sign-in completed successfully");
       toast({
         title: 'Google Sign-in Successful',
         description: 'You have been successfully logged in with Google.',
@@ -99,7 +101,22 @@ const Auth = () => {
       // Navigation will happen automatically via the useEffect
     } catch (error: any) {
       console.error('Google authentication error:', error);
-      // Toast handling moved to the useEffect error handler
+      const errorMessage = error.message || 'Failed to sign in with Google';
+      console.log("Google sign-in error details:", { code: error.code, message: errorMessage });
+      
+      if (error.code === 'auth/popup-closed-by-user') {
+        toast({
+          title: 'Sign-in Cancelled',
+          description: 'You closed the Google sign-in window. Please try again.',
+          variant: 'default',
+        });
+      } else {
+        toast({
+          title: 'Google Sign-in Failed',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      }
     } finally {
       setLoading(false);
     }
