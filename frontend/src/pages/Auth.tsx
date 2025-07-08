@@ -5,7 +5,7 @@ import { useToast } from '../hooks/use-toast';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
 
 // Utility function for combining class names
 const cn = (...classes: string[]) => classes.filter(Boolean).join(' ');
@@ -141,6 +141,17 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen w-screen relative overflow-hidden flex">
+      {/* Back button */}
+      <motion.button
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+        onClick={() => navigate('/')}
+        className="absolute top-4 left-4 z-50 flex items-center gap-2 text-white/70 hover:text-white transition-colors duration-200 bg-black/20 hover:bg-black/30 rounded-full p-2"
+      >
+        <ArrowLeft className="w-5 h-5" />
+      </motion.button>
+
       {/* Background image */}
       <div 
         className="absolute inset-0 w-full h-full z-0" 
