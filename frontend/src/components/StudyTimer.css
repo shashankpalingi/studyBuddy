@@ -1,28 +1,78 @@
 .study-timer {
   background-color: #212121;
-  border-radius: 0;
-  padding: 0;
+  border-radius: 12px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
   margin-top: 0;
-  box-shadow: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   height: 100%;
+  transition: all 0.3s ease;
+}
+
+/* Mode-specific styles */
+.study-timer.mode-work {
+  border: 2px solid rgba(52, 9, 121, 0.3);
+}
+
+.study-timer.mode-shortBreak {
+  border: 2px solid rgba(46, 204, 113, 0.3);
+}
+
+.study-timer.mode-longBreak {
+  border: 2px solid rgba(52, 152, 219, 0.3);
 }
 
 .timer-display {
   text-align: center;
 }
 
+.timer-mode {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.mode-work .timer-mode {
+  color: rgba(0, 212, 255, 1);
+}
+
+.mode-shortBreak .timer-mode {
+  color: rgba(46, 204, 113, 1);
+}
+
+.mode-longBreak .timer-mode {
+  color: rgba(52, 152, 219, 1);
+}
+
 .time {
-  font-size: 48px;
+  font-size: 64px;
   font-weight: 700;
   font-family: monospace;
-  color: white;
+  margin: 15px 0;
+  letter-spacing: 2px;
+}
+
+.mode-work .time {
   background: linear-gradient(90deg, rgba(52,9,121,1) 0%, rgba(0,212,255,1) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  letter-spacing: 2px;
+}
+
+.mode-shortBreak .time {
+  background: linear-gradient(90deg, rgba(46,204,113,1) 0%, rgba(39,174,96,1) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.mode-longBreak .time {
+  background: linear-gradient(90deg, rgba(52,152,219,1) 0%, rgba(41,128,185,1) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .timer-status {
@@ -31,10 +81,18 @@
   font-size: 14px;
 }
 
+.session-counter {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #888;
+  font-weight: 500;
+}
+
 .timer-controls {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .duration-selector {
@@ -65,23 +123,44 @@
 }
 
 .start-btn,
-.stop-btn {
-  padding: 10px;
-  border-radius: 6px;
-  font-weight: 500;
+.stop-btn,
+.reset-btn {
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
   font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.start-btn {
+.mode-work .start-btn {
   background: linear-gradient(90deg, rgba(52,9,121,0.8) 0%, rgba(0,212,255,0.8) 100%);
   color: white;
 }
 
-.start-btn:hover {
+.mode-work .start-btn:hover {
   background: linear-gradient(90deg, rgba(52,9,121,1) 0%, rgba(0,212,255,1) 100%);
+}
+
+.mode-shortBreak .start-btn {
+  background: linear-gradient(90deg, rgba(46,204,113,0.8) 0%, rgba(39,174,96,0.8) 100%);
+  color: white;
+}
+
+.mode-shortBreak .start-btn:hover {
+  background: linear-gradient(90deg, rgba(46,204,113,1) 0%, rgba(39,174,96,1) 100%);
+}
+
+.mode-longBreak .start-btn {
+  background: linear-gradient(90deg, rgba(52,152,219,0.8) 0%, rgba(41,128,185,0.8) 100%);
+  color: white;
+}
+
+.mode-longBreak .start-btn:hover {
+  background: linear-gradient(90deg, rgba(52,152,219,1) 0%, rgba(41,128,185,1) 100%);
 }
 
 .stop-btn {
@@ -93,6 +172,16 @@
   background-color: rgba(255, 77, 77, 0.3);
 }
 
+.reset-btn {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #bbb;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.reset-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
 .timer-loading,
 .timer-error {
   text-align: center;
@@ -102,4 +191,9 @@
 
 .timer-error {
   color: #ff4d4d;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 } 

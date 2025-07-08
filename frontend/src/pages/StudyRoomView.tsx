@@ -198,7 +198,7 @@ const StudyRoomView: React.FC = () => {
       case 'files':
         return <FileSharing roomId={roomId || ''} />;
       case 'timer':
-        return <StudyTimer />;
+        return <StudyTimer roomId={roomId || ''} />;
       case 'tasks':
         return <TaskManager roomId={roomId || ''} />;
       case 'polls':
