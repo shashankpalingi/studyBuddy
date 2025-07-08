@@ -7,6 +7,7 @@ export interface StudyRoom {
   subject: string;
   createdBy: string; // User ID of creator
   creatorName: string; // Display name of creator
+  hostId: string; // User ID of host (same as createdBy for now)
   createdAt: Timestamp;
   updatedAt: Timestamp;
   maxParticipants: number;

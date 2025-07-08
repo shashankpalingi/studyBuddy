@@ -31,22 +31,42 @@ export interface StudyRoomParticipant {
 // Create a new study room
 const createStudyRoom = async (roomData: Omit<StudyRoom, 'id' | 'createdAt' | 'updatedAt' | 'participants'>, userId: string, userName: string): Promise<StudyRoom> => {
   try {
+    console.log('Creating new study room:', { ...roomData, userId, userName });
     const studyRoomsRef = collection(db, 'studyRooms');
+    
+    // Ensure all required fields are set
     const newRoom = {
       ...roomData,
+      hostId: userId, // Add hostId to match Firestore rules
+      createdBy: userId,
+      creatorName: userName,
       status: 'active',
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now(),
-      participants: [userId]
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      participants: [userId], // Creator is automatically a participant
+      isPrivate: roomData.isPrivate || false,
+      joinCode: roomData.isPrivate ? roomData.joinCode : null,
+      maxParticipants: Math.max(2, Math.min(50, roomData.maxParticipants || 10)), // Ensure valid range
+      description: roomData.description || '',
+      tags: roomData.tags || []
     };
 
+    console.log('Saving room with data:', newRoom);
     const docRef = await addDoc(studyRoomsRef, newRoom);
-    return {
+    
+    // Get the created document to ensure it has all fields
+    const createdDoc = await getDoc(docRef);
+    if (!createdDoc.exists()) {
+      throw new Error('Failed to create study room');
+    }
+    
+    const createdRoom = {
       id: docRef.id,
-      ...newRoom,
-      createdBy: userId,
-      creatorName: userName
+      ...createdDoc.data()
     } as StudyRoom;
+    
+    console.log('Successfully created room:', createdRoom);
+    return createdRoom;
   } catch (error) {
     console.error('Error creating study room:', error);
     throw error;
@@ -56,7 +76,7 @@ const createStudyRoom = async (roomData: Omit<StudyRoom, 'id' | 'createdAt' | 'u
 // Get all public study rooms
 const getPublicStudyRooms = async (): Promise<StudyRoom[]> => {
   try {
-    // console.log('Fetching study rooms...');
+    console.log('Starting to fetch public study rooms...');
     const studyRoomsRef = collection(db, 'studyRooms');
     const q = query(
       studyRoomsRef,
@@ -64,25 +84,28 @@ const getPublicStudyRooms = async (): Promise<StudyRoom[]> => {
       orderBy('createdAt', 'desc')
     );
     
-    // console.log('Executing query...');
+    console.log('Executing query for public rooms...');
     const querySnapshot = await getDocs(q);
-    const rooms: StudyRoom[] = [];
+    console.log(`Found ${querySnapshot.size} total rooms before filtering`);
     
-    // console.log(`Query results: ${querySnapshot.size} rooms found`);
+    const rooms: StudyRoom[] = [];
     
     querySnapshot.forEach((doc) => {
       const roomData = doc.data();
-      // Filter out "Test Study Room" entries
-      if (!roomData.name.includes("Test Study Room")) {
-        // console.log('Room data:', { id: doc.id, ...roomData });
+      console.log('Processing room:', { id: doc.id, name: roomData.name, status: roomData.status });
+      
+      // Only exclude exact "Test Study Room" matches
+      if (roomData.name !== "Test Study Room") {
         rooms.push({
           id: doc.id,
           ...roomData
         } as StudyRoom);
+      } else {
+        console.log('Excluding test room:', roomData.name);
       }
     });
     
-    // console.log('Processed rooms:', rooms);
+    console.log(`Returning ${rooms.length} public rooms after filtering`);
     return rooms;
   } catch (error) {
     console.error('Error fetching public study rooms:', error);
@@ -113,31 +136,50 @@ const getStudyRoomById = async (roomId: string): Promise<StudyRoom | null> => {
 // Join a study room
 const joinStudyRoom = async (roomId: string, userId: string): Promise<void> => {
   try {
+    console.log('Attempting to join room:', roomId, 'for user:', userId);
     const roomRef = doc(db, 'studyRooms', roomId);
     const roomDoc = await getDoc(roomRef);
     
     if (!roomDoc.exists()) {
+      console.error('Room not found:', roomId);
       throw new Error('Study room not found');
     }
     
     const roomData = roomDoc.data();
-    if (roomData.participants.includes(userId)) {
-      throw new Error('User is already in this room');
+    console.log('Room data:', roomData);
+    
+    // Check if user is already in the room
+    if (roomData.participants && roomData.participants.includes(userId)) {
+      console.log('User already in room');
+      throw new Error('You are already in this room');
     }
     
-    if (roomData.participants.length >= roomData.maxParticipants) {
+    // Check if room is full
+    if (roomData.participants && roomData.participants.length >= roomData.maxParticipants) {
+      console.log('Room is full');
       throw new Error('Room is full');
     }
 
-    // Check if room is private and requires a join code
-    if (roomData.isPrivate && !roomData.participants.includes(userId)) {
+    // Check if room is private and not using join code
+    if (roomData.isPrivate === true) {
+      console.log('Attempted to join private room without code');
       throw new Error('This is a private room. Please use the join code to enter.');
     }
     
+    // Check if room is active
+    if (roomData.status !== 'active') {
+      console.log('Room is not active');
+      throw new Error('This room is not currently active');
+    }
+    
+    console.log('Adding user to room participants');
+    // Update the room document with the new participant and timestamp
     await updateDoc(roomRef, {
-      participants: [...roomData.participants, userId],
-      updatedAt: Timestamp.now()
+      participants: arrayUnion(userId),
+      updatedAt: serverTimestamp()
     });
+    
+    console.log('Successfully joined room');
   } catch (error) {
     console.error('Error joining study room:', error);
     throw error;
@@ -349,17 +391,29 @@ const getRoomsCreatedByUser = async (userId: string): Promise<StudyRoom[]> => {
 };
 
 // Delete all study rooms (Admin function)
-const deleteAllStudyRooms = async (): Promise<void> => {
+const deleteAllStudyRooms = async (userId: string): Promise<void> => {
   try {
+    console.log('Starting to delete all rooms for user:', userId);
     const studyRoomsRef = collection(db, 'studyRooms');
-    const querySnapshot = await getDocs(studyRoomsRef);
     
-    const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+    // First, get all rooms where user is creator or host
+    const q = query(
+      studyRoomsRef,
+      where('createdBy', '==', userId)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    console.log(`Found ${querySnapshot.size} rooms to delete`);
+    
+    const deletePromises = querySnapshot.docs.map(async (doc) => {
+      console.log('Deleting room:', doc.id);
+      await deleteDoc(doc.ref);
+    });
+    
     await Promise.all(deletePromises);
-    
-    console.log('All study rooms have been deleted');
+    console.log('Finished deleting rooms');
   } catch (error) {
-    console.error('Error deleting all study rooms:', error);
+    console.error('Error deleting study rooms:', error);
     throw error;
   }
 };

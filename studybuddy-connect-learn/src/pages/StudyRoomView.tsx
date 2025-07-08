@@ -15,6 +15,7 @@ import {
   getRoomParticipants,
   leaveStudyRoom, 
   updateStudyRoom,
+  deleteStudyRoom,
   StudyRoomParticipant 
 } from '../services/studyRoomService';
 import { StudyRoom } from '../types/studyRoom';
@@ -34,6 +35,7 @@ const StudyRoomView: React.FC = () => {
   const [error, setError] = useState('');
   const [isLeaving, setIsLeaving] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [activeFeature, setActiveFeature] = useState<Feature>('notes');
   const [sidebarMinimized, setSidebarMinimized] = useState(false);
   const [messages, setMessages] = useState<Array<{
@@ -152,6 +154,33 @@ const StudyRoomView: React.FC = () => {
       setIsClosing(false);
     }
   };
+
+  const handleDeleteRoom = async () => {
+    if (!roomId || !currentUser || !room) return;
+    
+    // Only creator can delete room
+    if (room.createdBy !== currentUser.uid) {
+      setError('Only the room creator can delete the room.');
+      return;
+    }
+    
+    if (window.confirm('Are you sure you want to delete this room? This action cannot be undone.')) {
+      try {
+        setIsDeleting(true);
+        setError('');
+        
+        await deleteStudyRoom(roomId);
+        
+        // Navigate back to study rooms
+        navigate('/study-rooms');
+      } catch (error: any) {
+        console.error('Error deleting room:', error);
+        setError(error.message || 'Failed to delete study room. Please try again.');
+      } finally {
+        setIsDeleting(false);
+      }
+    }
+  };
   
   const isCreator = currentUser && room && room.createdBy === currentUser.uid;
   
@@ -187,11 +216,13 @@ const StudyRoomView: React.FC = () => {
     return (
       <div className="study-room-view-container">
         <div className="custom-header">
-          <div className="header-logo">
-            <Link to="/">
-              <img src="/studybuddylogo.png" alt="StudyBuddy Logo" className="logo" />
-            </Link>
-          </div>
+          <button 
+            className="back-btn"
+            onClick={() => navigate('/study-rooms')}
+            title="Back to Study Rooms"
+          >
+            ← Back
+          </button>
         </div>
         <div className="loading-state">
           <div className="spinner"></div>
@@ -205,11 +236,13 @@ const StudyRoomView: React.FC = () => {
     return (
       <div className="study-room-view-container">
         <div className="custom-header">
-          <div className="header-logo">
-            <Link to="/">
-              <img src="/studybuddylogo.png" alt="StudyBuddy Logo" className="logo" />
-            </Link>
-          </div>
+          <button 
+            className="back-btn"
+            onClick={() => navigate('/study-rooms')}
+            title="Back to Study Rooms"
+          >
+            ← Back
+          </button>
         </div>
         <div className="error-state">
           <h2>Oops!</h2>
@@ -230,17 +263,16 @@ const StudyRoomView: React.FC = () => {
   
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
-      {/* Custom Header */}
+      {/* Custom Header with Back Button */}
       <div className="custom-header">
-        <div className="header-logo">
-          <Link to="/">
-            <img src="/studybuddylogo.png" alt="StudyBuddy Logo" className="logo" />
-          </Link>
-        </div>
-        
-        </div>
-
-      
+        <button 
+          className="back-btn"
+          onClick={() => navigate('/study-rooms')}
+          title="Back to Study Rooms"
+        >
+          ← Back
+        </button>
+      </div>
       
       <div className="flex h-[calc(100vh-64px)]">
         {/* Sidebar with minimize button */}
@@ -320,29 +352,32 @@ const StudyRoomView: React.FC = () => {
           </nav>
 
           <div className={`sidebar-footer ${sidebarMinimized ? 'minimized' : ''}`}>
-            <button
-              onClick={handleLeaveRoom}
-              className="sidebar-action-btn leave-btn"
-              disabled={isLeaving}
-              title="Leave Room"
-            >
-              <span className="icon">👋</span>
-              {!sidebarMinimized && <span>{isLeaving ? 'Leaving...' : 'Leave Room'}</span>}
-            </button>
-            <button
-              onClick={handleCloseRoom}
-              className="sidebar-action-btn close-btn"
-              disabled={isClosing}
-              title="Close Room"
-            >
-              <span className="icon">🚪</span>
-              {!sidebarMinimized && <span>{isClosing ? 'Closing...' : 'Close Room'}</span>}
-            </button>
+            {isCreator ? (
+              <button
+                onClick={handleDeleteRoom}
+                className="sidebar-action-btn delete-btn"
+                disabled={isDeleting}
+                title="Delete Room"
+              >
+                <span className="icon">🗑️</span>
+                {!sidebarMinimized && <span>{isDeleting ? 'Deleting...' : 'Delete Room'}</span>}
+              </button>
+            ) : (
+              <button
+                onClick={handleLeaveRoom}
+                className="sidebar-action-btn leave-btn"
+                disabled={isLeaving}
+                title="Leave Room"
+              >
+                <span className="icon">👋</span>
+                {!sidebarMinimized && <span>{isLeaving ? 'Leaving...' : 'Leave Room'}</span>}
+              </button>
+            )}
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-y-auto h-full">
+        <div className="flex-1 overflow-y-auto h-full flex flex-col">
           {renderFeatureContent()}
         </div>
       </div>

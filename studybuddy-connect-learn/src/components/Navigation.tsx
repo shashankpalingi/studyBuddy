@@ -1,125 +1,63 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useIsMobile } from '../hooks/use-mobile';
-import './Navigation.css';
+import { NavBar } from './ui/tubelight-navbar';
+import { Home, BookOpen, Users, LineChart, User } from 'lucide-react';
 
 const Navigation = () => {
-  const { currentUser, logout } = useAuth();
-  const isMobile = useIsMobile();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/');
-    } catch (error) {
-      console.error('Logout failed', error);
+  const handleSectionScroll = (sectionId: string) => {
+    // Check if we're on the home page
+    if (window.location.pathname === '/') {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // If not on home page, navigate to home page with section hash
+      navigate(`/#${sectionId}`);
     }
   };
 
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
+  const navItems = [
+    { 
+      name: 'Home', 
+      url: '/', 
+      icon: Home,
+      onClick: () => navigate('/')
+    },
+    { 
+      name: 'Features', 
+      url: '/#features', 
+      icon: BookOpen,
+      onClick: () => handleSectionScroll('features')
+    },
+    { 
+      name: 'Programs', 
+      url: '/#programs', 
+      icon: Users,
+      onClick: () => handleSectionScroll('programs')
+    },
+    { 
+      name: 'Impact', 
+      url: '/#impact', 
+      icon: LineChart,
+      onClick: () => handleSectionScroll('impact')
+    },
+    { 
+      name: 'Sign In', 
+      url: '/auth', 
+      icon: User,
+      onClick: () => navigate('/auth')
+    },
+  ];
 
   return (
-    <div className="navbar-container">
-      <nav className="navbar">
-        <Link to="/" className="navbar-logo">
-          <img src="/favicon.ico" alt="StudyBuddy" />
-          StudyBuddy
-        </Link>
-
-        {!isMobile && (
-          <ul className="navbar-links">
-            <li>
-              <Link to="/" className="navbar-link">Home</Link>
-            </li>
-            <li>
-              <Link to="/#features" className="navbar-link">Features</Link>
-            </li>
-            <li>
-              <Link to="/#programs" className="navbar-link">Programs</Link>
-            </li>
-            <li>
-              <Link to="/#impact" className="navbar-link">Impact</Link>
-            </li>
-          </ul>
-        )}
-
-        {!isMobile && (
-          <div>
-            {currentUser ? (
-              <div className="flex items-center gap-4">
-                <Link to="/dashboard" className="navbar-link">Dashboard</Link>
-                <Link to="/study-rooms" className="navbar-link">Study Rooms</Link>
-                <Link to="/profile" className="navbar-link">Profile</Link>
-                <button onClick={handleLogout} className="auth-button bg-red-600 hover:bg-red-700">
-                  Sign Out
-                </button>
-              </div>
-            ) : (
-              <Link to="/auth" className="auth-button">
-                Sign In
-              </Link>
-            )}
-          </div>
-        )}
-
-        {isMobile && (
-          <button onClick={toggleMobileMenu} className="menu-button">
-            <i className="ri-menu-line"></i>
-          </button>
-        )}
-      </nav>
-
-      <div className={`mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
-        <button onClick={toggleMobileMenu} className="mobile-close">
-          <i className="ri-close-line"></i>
-        </button>
-
-        <ul className="mobile-links">
-          <li>
-            <Link to="/" className="mobile-link" onClick={toggleMobileMenu}>Home</Link>
-          </li>
-          <li>
-            <Link to="/#features" className="mobile-link" onClick={toggleMobileMenu}>Features</Link>
-          </li>
-          <li>
-            <Link to="/#programs" className="mobile-link" onClick={toggleMobileMenu}>Programs</Link>
-          </li>
-          <li>
-            <Link to="/#impact" className="mobile-link" onClick={toggleMobileMenu}>Impact</Link>
-          </li>
-          
-          {currentUser ? (
-            <>
-              <li>
-                <Link to="/dashboard" className="mobile-link" onClick={toggleMobileMenu}>Dashboard</Link>
-              </li>
-              <li>
-                <Link to="/study-rooms" className="mobile-link" onClick={toggleMobileMenu}>Study Rooms</Link>
-              </li>
-              <li>
-                <Link to="/profile" className="mobile-link" onClick={toggleMobileMenu}>Profile</Link>
-              </li>
-              <li>
-                <button onClick={() => {handleLogout(); toggleMobileMenu();}} className="mobile-link bg-red-600 w-full text-left p-2 rounded">
-                  Sign Out
-                </button>
-              </li>
-            </>
-          ) : (
-            <li>
-              <Link to="/auth" className="mobile-link bg-violet-600 block text-center p-2 rounded" onClick={toggleMobileMenu}>
-                Sign In
-              </Link>
-            </li>
-          )}
-        </ul>
-      </div>
-    </div>
+    <NavBar 
+      items={navItems} 
+      className="bg-transparent"
+    />
   );
 };
 

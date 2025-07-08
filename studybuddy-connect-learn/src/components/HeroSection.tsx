@@ -1,38 +1,73 @@
+"use client";
 
-import { useEffect, useState } from 'react';
+import Spline from '@splinetool/react-spline';
+import { useRef, useState, useEffect } from 'react';
+import Logos3Demo from './Logos3Demo';
+import studybuddyLogo from '../pages/studybuddylogo.png';
 
 const HeroSection = () => {
-  const [isVisible, setIsVisible] = useState(false);
+  const splineRef = useRef();
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  const handleLoad = (spline) => {
+    splineRef.current = spline;
+    // Zoom out to 0.52 (slightly more than half the original size)
+    spline.setZoom(0.45);
+    setIsLoaded(true);
+  };
+
+  // Lazy load the 3D model
+  const [shouldLoadSpline, setShouldLoadSpline] = useState(false);
 
   useEffect(() => {
-    setIsVisible(true);
+    const handleScroll = () => {
+      // Load the 3D model when user scrolls or after a short delay
+      if (!shouldLoadSpline) {
+        setShouldLoadSpline(true);
+      }
+    };
+
+    // Add scroll event listener
+    window.addEventListener('scroll', handleScroll, { once: true });
+
+    // Optional: Set a timeout to load the model if user doesn't scroll
+    const timeoutId = setTimeout(() => {
+      if (!shouldLoadSpline) {
+        setShouldLoadSpline(true);
+      }
+    }, 2000);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   return (
-    <section id="hero" className="relative min-h-screen flex items-center hero-bg">
-      <div className="absolute inset-0 bg-black/40"></div>
-      <div className={`relative z-10 w-full transition-all duration-1000 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-      }`}>
-        <div className="container mx-auto px-6 md:px-12 lg:px-16">
-          <div className="max-w-4xl lg:max-w-5xl">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight mb-8">
-              FIND YOUR <span className="text-green-400">STUDY</span> PARTNER <br />
-              AND <span className="text-yellow-400">EXCEL</span> <span className="text-blue-400">TOGETHER</span>
-            </h1>
-            <p className="text-white text-xl lg:text-2xl mb-12 max-w-3xl">
-              Join virtual study rooms, connect with like-minded students, and prepare for exams together.
-              Make studying more engaging and effective with peer learning.
-            </p>
-            <div className="flex flex-wrap gap-6">
-              <button className="bg-primary/80 backdrop-blur-sm text-white px-10 py-4 rounded-button text-lg lg:text-xl font-semibold hover:bg-primary transition-all whitespace-nowrap transform hover:scale-105">
-                Join Study Room
-              </button>
-              <button className="bg-white/10 backdrop-blur-sm text-white px-10 py-4 rounded-button text-lg lg:text-xl font-semibold hover:bg-white hover:text-gray-900 transition-all whitespace-nowrap transform hover:scale-105">
-                Find Study Buddies
-              </button>
-            </div>
-          </div>
+    <section id="hero" className="relative w-full h-screen overflow-hidden">
+      <div className="absolute inset-0">
+        {/* Logo in top-left corner */}
+        <div className="absolute top-4 left-4 z-50">
+          <img 
+            src={studybuddyLogo} 
+            alt="StudyBuddy Logo" 
+            className="h-16 w-16 object-contain" 
+          />
+        </div>
+
+        {shouldLoadSpline && (
+          <Spline 
+            scene="https://prod.spline.design/l6LIDRva5KqYpjNV/scene.splinecode" 
+            className="w-full h-full object-cover"
+            onLoad={handleLoad}
+            style={{ 
+              opacity: isLoaded ? 1 : 0,
+              transition: 'opacity 0.5s ease-in-out'
+            }}
+          />
+        )}
+        <div className="absolute bottom-0 left-0 w-full">
+          <Logos3Demo />
         </div>
       </div>
     </section>

@@ -81,11 +81,35 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (email: string, password: string) => {
     try {
       clearError();
-      return await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      console.log('Login successful for:', email);
+      return result;
     } catch (error: any) {
-      console.error('Login error:', error);
-      setError(error.message);
-      throw error;
+      console.error('Detailed Login Error:', {
+        code: error.code,
+        message: error.message,
+        email: email
+      });
+      
+      // More specific error messages
+      let userFriendlyMessage = 'Authentication failed. Please try again.';
+      switch (error.code) {
+        case 'auth/invalid-credential':
+          userFriendlyMessage = 'Invalid email or password. Please check and try again.';
+          break;
+        case 'auth/user-not-found':
+          userFriendlyMessage = 'No account found with this email. Please sign up.';
+          break;
+        case 'auth/wrong-password':
+          userFriendlyMessage = 'Incorrect password. Please try again.';
+          break;
+        case 'auth/too-many-requests':
+          userFriendlyMessage = 'Too many login attempts. Please try again later.';
+          break;
+      }
+      
+      setError(userFriendlyMessage);
+      throw new Error(userFriendlyMessage);
     }
   };
 

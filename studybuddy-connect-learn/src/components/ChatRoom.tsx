@@ -14,7 +14,8 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import './ChatRoom.css';
-import { Video, Image, Phone } from 'lucide-react';
+import { Video, Image, Phone, Users } from 'lucide-react';
+import VideoCallComponent from './VideoCall';
 
 interface Message {
   id: string;
@@ -39,8 +40,47 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [isInVideoCall, setIsInVideoCall] = useState(false);
+  const [hasActiveCall, setHasActiveCall] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  
+  // Check for active calls in the room
+  useEffect(() => {
+    if (!roomId) return;
+    
+    // Import dynamically to avoid circular dependencies
+    import('./VideoCall/VideoCallService').then(({ VideoCallService }) => {
+      // Initial check - silently handle errors
+      VideoCallService.hasActiveCall(roomId)
+        .then(hasCall => setHasActiveCall(hasCall))
+        .catch(err => {
+          console.error('Error checking for active calls:', err);
+          // Keep hasActiveCall as false and continue
+        });
+      
+      // Try to subscribe to active callers
+      try {
+        const unsubscribe = VideoCallService.subscribeToActiveCallers(
+          roomId,
+          (activeCallers) => {
+            setHasActiveCall(activeCallers.length > 0);
+          }
+        );
+        
+        return () => {
+          try {
+            unsubscribe();
+          } catch (err) {
+            console.error('Error unsubscribing from active callers:', err);
+          }
+        };
+      } catch (err) {
+        console.error('Error subscribing to active callers:', err);
+        // Return empty cleanup function if subscription fails
+        return () => {};
+      }
+    });
+  }, [roomId]);
 
   // Load messages
   useEffect(() => {
@@ -175,33 +215,30 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
         <h2>Group Chat</h2>
         <div className="chat-actions">
           <button 
-            className="chat-action-btn"
+            className={`chat-action-btn ${hasActiveCall && !isInVideoCall ? 'active-call' : ''}`}
             onClick={handleVideoCall}
-            title="Start video call"
+            title={hasActiveCall ? "Join active video call" : "Start video call"}
           >
-            <Video size={18} />
+            {hasActiveCall && !isInVideoCall ? (
+              <>
+                <span className="call-indicator"></span>
+                <Video size={18} />
+              </>
+            ) : (
+              <Video size={18} />
+            )}
           </button>
         </div>
       </div>
       
+      {/* Video Call Overlay */}
       {isInVideoCall && (
-        <div className="video-call-overlay">
-          <div className="video-call-header">
-            <h3>Video Call</h3>
-            <button className="end-call-btn" onClick={endVideoCall}>
-              End Call
-            </button>
-          </div>
-          <div className="video-call-container">
-            {/* Video call implementation would go here */}
-            <div className="video-placeholder">
-              <div className="video-message">
-                <Phone size={48} />
-                <p>Video call feature coming soon!</p>
-                <p>This is a placeholder UI for the video call functionality.</p>
-              </div>
-            </div>
-          </div>
+        <div className="video-call-wrapper">
+          <VideoCallComponent 
+            roomId={roomId} 
+            onEndCall={endVideoCall} 
+            style={{ height: '100%' }}
+          />
         </div>
       )}
       
