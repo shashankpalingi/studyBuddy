@@ -1,0 +1,15 @@
+[build]
+  command = "npm run build"
+  publish = "dist/client"
+
+[dev]
+  command = "npm run dev"
+  port = 5173
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build.environment]
+  NODE_VERSION = "18.19.1" 
