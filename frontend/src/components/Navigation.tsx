@@ -25,7 +25,7 @@ const Navigation = () => {
       name: 'Home', 
       url: '/', 
       icon: Home,
-      onClick: () => navigate('/')
+      onClick: () => handleSectionScroll('hero')
     },
     { 
       name: 'Features', 
