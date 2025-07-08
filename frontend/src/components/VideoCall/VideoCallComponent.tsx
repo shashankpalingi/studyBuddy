@@ -37,18 +37,11 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
   
   // New useEffect to handle local video stream assignment
   useEffect(() => {
-    console.log('Attempting local stream assignment...');
-    console.log('  streamRef.current:', streamRef.current);
-    console.log('  myVideoRef.current:', myVideoRef.current);
-
     if (streamRef.current && myVideoRef.current) {
-      console.log('  Assigning stream to video element.');
       myVideoRef.current.srcObject = streamRef.current;
       myVideoRef.current.play().catch(err => {
         console.error("Error playing local video from useEffect:", err);
       });
-    } else {
-      console.log('  Cannot assign: streamRef or myVideoRef not ready.');
     }
   }, [streamRef.current, myVideoRef.current]);
   
@@ -106,15 +99,17 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
               // Store the connection
               peerConnections.current[callerId] = call;
               
-              // Directly assign stream to video element
-              const videoElement = peerVideoRefs.current[callerId];
-              if (videoElement) {
-                videoElement.srcObject = remoteStream;
-                // Ensure remote video plays
-                videoElement.play().catch(err => {
-                  console.error("Error playing remote video:", err);
-                });
-              }
+              // Schedule attaching the stream to the element in the next frame
+              // This ensures the element exists in the DOM
+              setTimeout(() => {
+                const videoElement = peerVideoRefs.current[callerId];
+                if (videoElement) {
+                  videoElement.srcObject = remoteStream;
+                  videoElement.play().catch(err => {
+                    console.error("Error playing remote video:", err);
+                  });
+                }
+              }, 100);
             });
           });
           
@@ -235,18 +230,24 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
     try {
       if (isScreenSharing) {
         // Stop screen sharing
-        screenStreamRef.current?.getTracks().forEach(track => track.stop());
-        screenStreamRef.current = null;
-        setIsScreenSharing(false);
+        if (screenStreamRef.current) {
+          screenStreamRef.current.getTracks().forEach(track => track.stop());
+          screenStreamRef.current = null;
+        }
         
-        // Restore camera video
-        if (streamRef.current && myVideoRef.current) {
-          myVideoRef.current.srcObject = streamRef.current;
+        // Switch back to camera
+        if (streamRef.current && peerRef.current) {
+          // Update our video
+          const videoTracks = streamRef.current.getVideoTracks();
+          if (videoTracks.length > 0 && myVideoRef.current) {
+            myVideoRef.current.srcObject = streamRef.current;
+          }
           
-          // Update all peer connections with camera video
-          Object.values(peerConnections.current).forEach(connection => {
-            connection.peerConnection?.getSenders().forEach(sender => {
-              if (sender.track?.kind === 'video' && streamRef.current) {
+          // Update all peer connections
+          Object.values(peerConnections.current).forEach(conn => {
+            // Replace the track in the sender
+            conn.peerConnection.getSenders().forEach(sender => {
+              if (sender.track && sender.track.kind === 'video' && streamRef.current) {
                 const videoTrack = streamRef.current.getVideoTracks()[0];
                 if (videoTrack) {
                   sender.replaceTrack(videoTrack);
@@ -255,55 +256,42 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
             });
           });
         }
+        
+        setIsScreenSharing(false);
       } else {
         // Start screen sharing
         const screenStream = await navigator.mediaDevices.getDisplayMedia({ 
           video: true,
-          audio: true 
+          audio: true
         });
         
+        // Save reference to screen stream
         screenStreamRef.current = screenStream;
         
+        // Handle when user stops sharing via browser UI
+        screenStream.getVideoTracks()[0].onended = () => {
+          toggleScreenShare();
+        };
+        
+        // Update our video
         if (myVideoRef.current) {
           myVideoRef.current.srcObject = screenStream;
         }
         
-        // Update all peer connections with screen share video
-        Object.values(peerConnections.current).forEach(connection => {
-          connection.peerConnection?.getSenders().forEach(sender => {
-            if (sender.track?.kind === 'video') {
-              const videoTrack = screenStream.getVideoTracks()[0];
-              if (videoTrack) {
-                sender.replaceTrack(videoTrack);
-              }
-            }
-          });
-        });
-        
-        // Listen for when user stops screen sharing through browser UI
-        screenStream.getVideoTracks()[0].addEventListener('ended', () => {
-          // Just stop screen sharing without trying to toggle again
-          screenStreamRef.current?.getTracks().forEach(track => track.stop());
-          screenStreamRef.current = null;
-          setIsScreenSharing(false);
-          
-          // Restore camera video
-          if (streamRef.current && myVideoRef.current) {
-            myVideoRef.current.srcObject = streamRef.current;
-            
-            // Update all peer connections with camera video
-            Object.values(peerConnections.current).forEach(connection => {
-              connection.peerConnection?.getSenders().forEach(sender => {
-                if (sender.track?.kind === 'video' && streamRef.current) {
-                  const videoTrack = streamRef.current.getVideoTracks()[0];
-                  if (videoTrack) {
-                    sender.replaceTrack(videoTrack);
-                  }
+        // Update all peer connections
+        if (peerRef.current) {
+          Object.values(peerConnections.current).forEach(conn => {
+            // Replace the track in the sender
+            conn.peerConnection.getSenders().forEach(sender => {
+              if (sender.track && sender.track.kind === 'video') {
+                const videoTrack = screenStream.getVideoTracks()[0];
+                if (videoTrack) {
+                  sender.replaceTrack(videoTrack);
                 }
-              });
+              }
             });
-          }
-        });
+          });
+        }
         
         setIsScreenSharing(true);
       }
@@ -333,15 +321,17 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
       // Store the connection
       peerConnections.current[peerId] = call;
       
-      // Directly assign stream to video element
-      const videoElement = peerVideoRefs.current[peerId];
-      if (videoElement) {
-        videoElement.srcObject = remoteStream;
-        // Ensure remote video plays
-        videoElement.play().catch(err => {
-          console.error("Error playing remote video:", err);
-        });
-      }
+      // Schedule attaching the stream to the element in the next frame
+      // This ensures the element exists in the DOM
+      setTimeout(() => {
+        const videoElement = peerVideoRefs.current[peerId];
+        if (videoElement) {
+          videoElement.srcObject = remoteStream;
+          videoElement.play().catch(err => {
+            console.error("Error playing remote video:", err);
+          });
+        }
+      }, 100);
     });
     
     call.on('close', () => {
@@ -400,63 +390,41 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
           </div>
           
           <div className="video-main-area">
-            {/* Main video display (remote user or local if alone) */}
-            {activeCallers.length > 1 && connectedPeers.length > 0 ? (
-              // If there are multiple active callers and we are connected to at least one
-              // Display the first connected peer as the main video
-              <div className="main-video-wrapper">
-                <video
-                  ref={el => peerVideoRefs.current[connectedPeers[0]] = el}
-                  autoPlay
-                  playsInline
-                />
-                <div className="video-label">{getPeerName(connectedPeers[0])}</div>
-              </div>
-            ) : (
-              // If only one person (you) or no one connected yet, show your own video as main
-              <div className="main-video-wrapper self-video-main">
+            {/* Grid layout for all participants */}
+            <div className={`videos-grid participants-${Math.min(activeCallers.length, 4)}`}>
+              {/* Local user's video */}
+              <div className="video-wrapper self-video">
                 <video 
                   ref={myVideoRef}
                   autoPlay
                   muted
                   playsInline
-                  className={isVideoEnabled ? "" : "hidden"}
-                />
-                <div className="video-label">{activeCallers.length <= 1 ? "You" : "Camera Off"}</div>
-                {!isVideoEnabled && <div className="video-off-indicator">Camera Off</div>}
-              </div>
-            )}
-
-            {/* Picture-in-Picture for local video when remote is main, or for other remote videos */}
-            {activeCallers.length > 1 && (
-              <div className="self-video-pip">
-                <video 
-                  ref={myVideoRef}
-                  autoPlay
-                  muted
-                  playsInline
-                  className={isVideoEnabled ? "" : "hidden"}
+                  className={isVideoEnabled ? "" : "video-disabled"}
                 />
                 <div className="video-label">You</div>
                 {!isVideoEnabled && <div className="video-off-indicator">Camera Off</div>}
               </div>
-            )}
 
-            {/* Display additional connected peers as smaller videos if main is taken by another peer*/}
-            {activeCallers.length > 1 && connectedPeers.length > 1 && (
-              <div className="other-videos-grid">
-                {connectedPeers.slice(1).map(peerId => (
-                  <div key={peerId} className="video-wrapper">
-                    <video
-                      ref={el => peerVideoRefs.current[peerId] = el}
-                      autoPlay
-                      playsInline
-                    />
-                    <div className="video-label">{getPeerName(peerId)}</div>
-                  </div>
-                ))}
-              </div>
-            )}
+              {/* Remote peers' videos */}
+              {connectedPeers.map(peerId => (
+                <div key={peerId} className="video-wrapper">
+                  <video
+                    ref={el => {
+                      peerVideoRefs.current[peerId] = el;
+                      // If we already have a stream for this peer, assign it now
+                      const conn = peerConnections.current[peerId];
+                      if (conn && el && !el.srcObject && conn.remoteStream) {
+                        el.srcObject = conn.remoteStream;
+                        el.play().catch(err => console.error("Error playing remote video:", err));
+                      }
+                    }}
+                    autoPlay
+                    playsInline
+                  />
+                  <div className="video-label">{getPeerName(peerId)}</div>
+                </div>
+              ))}
+            </div>
 
             {/* Message overlays */}
             {activeCallers.length <= 1 && (

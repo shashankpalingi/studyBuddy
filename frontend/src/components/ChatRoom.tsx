@@ -236,8 +236,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
         <div className="video-call-wrapper">
           <VideoCallComponent 
             roomId={roomId} 
-            onEndCall={endVideoCall} 
-            style={{ height: '100%' }}
+            onEndCall={endVideoCall}
           />
         </div>
       )}
