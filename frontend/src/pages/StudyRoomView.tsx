@@ -215,15 +215,6 @@ const StudyRoomView: React.FC = () => {
   if (isLoading) {
     return (
       <div className="study-room-view-container">
-        <div className="custom-header">
-          <button 
-            className="back-btn"
-            onClick={() => navigate('/study-rooms')}
-            title="Back to Study Rooms"
-          >
-            ← Back
-          </button>
-        </div>
         <div className="loading-state">
           <div className="spinner"></div>
           <p>Loading study room...</p>
@@ -235,15 +226,6 @@ const StudyRoomView: React.FC = () => {
   if (error || !room) {
     return (
       <div className="study-room-view-container">
-        <div className="custom-header">
-          <button 
-            className="back-btn"
-            onClick={() => navigate('/study-rooms')}
-            title="Back to Study Rooms"
-          >
-            ← Back
-          </button>
-        </div>
         <div className="error-state">
           <h2>Oops!</h2>
           <p>{error || 'Something went wrong'}</p>
@@ -263,18 +245,7 @@ const StudyRoomView: React.FC = () => {
   
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
-      {/* Custom Header with Back Button */}
-      <div className="custom-header">
-        <button 
-          className="back-btn"
-          onClick={() => navigate('/study-rooms')}
-          title="Back to Study Rooms"
-        >
-          ← Back
-        </button>
-      </div>
-      
-      <div className="flex h-[calc(100vh-64px)]">
+      <div className="flex h-screen">
         {/* Sidebar with minimize button */}
         <div className={`sidebar ${sidebarMinimized ? 'minimized' : ''}`}>
           <div className="sidebar-header">
@@ -283,8 +254,8 @@ const StudyRoomView: React.FC = () => {
               {sidebarMinimized ? '→' : '←'}
             </button>
           </div>
-          <nav className="sidebar-nav">
-
+          
+          <div className="sidebar-nav">
             <button
               onClick={() => setActiveFeature('notes')}
               className={`sidebar-btn ${activeFeature === 'notes' ? 'active' : ''}`}
@@ -293,22 +264,25 @@ const StudyRoomView: React.FC = () => {
               <span className="icon">📝</span>
               {!sidebarMinimized && <span className="label">Collaborative Notes</span>}
             </button>
+            
             <button
               onClick={() => setActiveFeature('chat')}
               className={`sidebar-btn ${activeFeature === 'chat' ? 'active' : ''}`}
-              title="Chat"
+              title="Chat Room"
             >
               <span className="icon">💬</span>
-              {!sidebarMinimized && <span className="label">Chat</span>}
+              {!sidebarMinimized && <span className="label">Chat Room</span>}
             </button>
+            
             <button
               onClick={() => setActiveFeature('files')}
               className={`sidebar-btn ${activeFeature === 'files' ? 'active' : ''}`}
-              title="Files"
+              title="File Sharing"
             >
-              <span className="icon">📁</span>
-              {!sidebarMinimized && <span className="label">Files</span>}
+              <span className="icon">📂</span>
+              {!sidebarMinimized && <span className="label">File Sharing</span>}
             </button>
+            
             <button
               onClick={() => setActiveFeature('timer')}
               className={`sidebar-btn ${activeFeature === 'timer' ? 'active' : ''}`}
@@ -317,22 +291,25 @@ const StudyRoomView: React.FC = () => {
               <span className="icon">⏱️</span>
               {!sidebarMinimized && <span className="label">Study Timer</span>}
             </button>
+            
             <button
               onClick={() => setActiveFeature('tasks')}
               className={`sidebar-btn ${activeFeature === 'tasks' ? 'active' : ''}`}
-              title="Tasks"
+              title="Task Manager"
             >
               <span className="icon">✅</span>
-              {!sidebarMinimized && <span className="label">Tasks</span>}
+              {!sidebarMinimized && <span className="label">Task Manager</span>}
             </button>
+            
             <button
               onClick={() => setActiveFeature('polls')}
               className={`sidebar-btn ${activeFeature === 'polls' ? 'active' : ''}`}
-              title="Polls"
+              title="Poll System"
             >
               <span className="icon">📊</span>
-              {!sidebarMinimized && <span className="label">Polls</span>}
+              {!sidebarMinimized && <span className="label">Poll System</span>}
             </button>
+            
             <button
               onClick={() => setActiveFeature('whiteboard')}
               className={`sidebar-btn ${activeFeature === 'whiteboard' ? 'active' : ''}`}
@@ -341,15 +318,16 @@ const StudyRoomView: React.FC = () => {
               <span className="icon">🎨</span>
               {!sidebarMinimized && <span className="label">Whiteboard</span>}
             </button>
+            
             <button
               onClick={() => setActiveFeature('youtube')}
               className={`sidebar-btn ${activeFeature === 'youtube' ? 'active' : ''}`}
-              title="Watch Together"
+              title="YouTube Watch Together"
             >
               <span className="icon">📺</span>
               {!sidebarMinimized && <span className="label">Watch Together</span>}
             </button>
-          </nav>
+          </div>
 
           <div className={`sidebar-footer ${sidebarMinimized ? 'minimized' : ''}`}>
             {isCreator ? (
