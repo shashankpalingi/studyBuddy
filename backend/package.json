@@ -1,0 +1,19 @@
+{
+  "name": "studybuddy-backend",
+  "version": "1.0.0",
+  "description": "StudyBuddy backend with Firebase",
+  "main": "index.js",
+  "scripts": {
+    "deploy:rules": "firebase deploy --only firestore:rules",
+    "deploy:indexes": "firebase deploy --only firestore:indexes",
+    "deploy:storage": "firebase deploy --only storage",
+    "deploy:all": "firebase deploy --only firestore,storage"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.10.1",
+    "firebase-functions": "^4.5.0"
+  },
+  "devDependencies": {
+    "firebase-tools": "^12.6.2"
+  }
+} 

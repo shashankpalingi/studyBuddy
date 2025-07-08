@@ -1,0 +1,165 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is a room participant
+    function isRoomParticipant(roomId) {
+      let room = get(/databases/$(database)/documents/studyRooms/$(roomId));
+      return request.auth != null && (
+        room.data.hostId == request.auth.uid || 
+        room.data.createdBy == request.auth.uid ||
+        request.auth.uid in room.data.participants
+      );
+    }
+
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user is an admin - Modified to allow anyone
+    function isAdmin() {
+      return request.auth != null; // Any authenticated user is now an "admin"
+    }
+
+    // Helper function to check if user can join room
+    function canJoinRoom(roomData) {
+      return roomData.status == 'active' && 
+             roomData.participants.size() < roomData.maxParticipants &&
+             !(request.auth.uid in roomData.participants);
+    }
+
+    // Helper function to validate participants array update
+    function isValidParticipantsUpdate(oldParticipants, newParticipants) {
+      let addedParticipants = newParticipants.removeAll(oldParticipants);
+      let removedParticipants = oldParticipants.removeAll(newParticipants);
+      
+      // Only one participant can be added or removed at a time
+      return (addedParticipants.size() == 1 && removedParticipants.size() == 0) ||
+             (addedParticipants.size() == 0 && removedParticipants.size() == 1);
+    }
+
+    // User profiles - each user can read public profiles, but only write their own
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if request.auth.uid == userId;
+    }
+    
+    // User Daily AI Usage Data
+    match /usage/{docId} {
+      allow read, write: if request.auth != null && (
+        docId.matches("^\\d{4}-\\d{2}-\\d{2}_" + request.auth.uid) ||
+        docId.matches("^\\d{4}-\\d{2}-\\d{2}$") ||
+        docId.matches("^\\d{4}-\\d{2}$")
+      );
+    }
+    
+    // Study Rooms - Modified to allow any authenticated user to delete rooms
+    match /studyRooms/{roomId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        resource.data.createdBy == request.auth.uid ||
+        resource.data.hostId == request.auth.uid ||
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants', 'updatedAt']) &&
+         canJoinRoom(resource.data))
+      );
+      allow delete: if isAuthenticated(); // Any authenticated user can delete any room
+      
+      // Chat messages within a study room
+      match /messages/{messageId} {
+        allow read: if isRoomParticipant(roomId);
+        allow create: if isRoomParticipant(roomId);
+        allow update, delete: if request.auth.uid == resource.data.userId;
+      }
+      
+      // Participants in a study room
+      match /participants/{participantId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && (
+          request.auth.uid == participantId ||
+          request.auth.uid == get(/databases/$(database)/documents/studyRooms/$(roomId)).data.createdBy ||
+          request.auth.uid == get(/databases/$(database)/documents/studyRooms/$(roomId)).data.hostId
+        );
+      }
+      
+      // Notes in a study room
+      match /notes/{noteId} {
+        allow read: if isRoomParticipant(roomId);
+        allow create, update: if isRoomParticipant(roomId);
+        allow delete: if request.auth.uid == resource.data.createdBy;
+      }
+      
+      // Files in a study room
+      match /files/{fileId} {
+        allow read, write: if isRoomParticipant(roomId);
+      }
+      
+      // Tasks in a study room
+      match /tasks/{taskId} {
+        allow read, write: if isRoomParticipant(roomId);
+      }
+      
+      // Polls in a study room
+      match /polls/{pollId} {
+        allow read, write: if isRoomParticipant(roomId);
+        
+        // Poll votes
+        match /votes/{voteId} {
+          allow read, write: if isRoomParticipant(roomId);
+        }
+      }
+      
+      // Tools collection
+      match /tools/{toolId} {
+        allow read: if isRoomParticipant(roomId);
+        allow write: if isRoomParticipant(roomId);
+        
+        // Whiteboard shapes
+        match /shapes/{shapeId} {
+          allow read, write: if isAuthenticated();
+        }
+        
+        // Allow access to all nested collections under tools
+        match /{nestedCollection}/{nestedDocument} {
+          allow read, write: if isAuthenticated();
+        }
+      }
+      
+      // Whiteboard data
+      match /whiteboard/{dataId} {
+        allow read, write: if isAuthenticated();
+      }
+      
+      // YouTube watch together data
+      match /youtube/{dataId} {
+        allow read, write: if isAuthenticated();
+      }
+      
+      // Video call participants
+      match /videoParticipants/{participantId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null;
+        allow update: if request.auth != null && (
+          request.resource.data.userId == request.auth.uid || 
+          get(/databases/$(database)/documents/studyRooms/$(roomId)).data.createdBy == request.auth.uid
+        );
+        allow delete: if request.auth != null && (
+          resource.data.userId == request.auth.uid || 
+          get(/databases/$(database)/documents/studyRooms/$(roomId)).data.createdBy == request.auth.uid
+        );
+      }
+      
+      // Active callers for WebRTC
+      match /activeCallers/{callerId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+        allow update: if request.auth != null && request.resource.data.userId == request.auth.uid;
+        allow delete: if request.auth != null && (
+          resource.data.userId == request.auth.uid || 
+          get(/databases/$(database)/documents/studyRooms/$(roomId)).data.createdBy == request.auth.uid
+        );
+      }
+    }
+  }
+} 
