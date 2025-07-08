@@ -40,12 +40,17 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
     if (streamRef.current && myVideoRef.current) {
       myVideoRef.current.srcObject = streamRef.current;
       
-      // Use the same play with retry approach
-      const attemptPlay = () => {
+      // Use retry approach with max attempts and backoff
+      const attemptPlay = (attempts = 0, delay = 200) => {
+        if (attempts >= 5) {
+          console.warn("Max retry attempts reached for local video");
+          return;
+        }
+        
         myVideoRef.current?.play().catch(err => {
-          if (err.name === 'AbortError') {
-            console.warn("Local video play was aborted, retrying in 200ms");
-            setTimeout(attemptPlay, 200);
+          if (err.name === 'AbortError' && attempts < 5) {
+            console.warn(`Local video play was aborted (attempt ${attempts+1}/5), retrying in ${delay}ms`);
+            setTimeout(() => attemptPlay(attempts + 1, delay * 1.5), delay);
           } else {
             console.error("Error playing local video from useEffect:", err);
           }
@@ -118,13 +123,18 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
                   if (videoElement.srcObject !== remoteStream) {
                     videoElement.srcObject = remoteStream;
                     
-                    // Use play() with catch and retry logic
-                    const attemptPlay = () => {
+                    // Use play() with catch, retry logic and max attempts
+                    const attemptPlay = (attempts = 0, delay = 200) => {
+                      if (attempts >= 5) {
+                        console.warn(`Max retry attempts reached for peer ${callerId}`);
+                        return;
+                      }
+                      
                       videoElement.play()
                         .catch(err => {
-                          if (err.name === 'AbortError') {
-                            console.warn("Play was aborted, retrying in 200ms");
-                            setTimeout(attemptPlay, 200);
+                          if (err.name === 'AbortError' && attempts < 5) {
+                            console.warn(`Play was aborted for peer ${callerId} (attempt ${attempts+1}/5), retrying in ${delay}ms`);
+                            setTimeout(() => attemptPlay(attempts + 1, delay * 1.5), delay);
                           } else {
                             console.error("Error playing remote video:", err);
                           }
@@ -353,14 +363,21 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
           // Only set srcObject if it's not already set to avoid unnecessary reload
           if (videoElement.srcObject !== remoteStream) {
             videoElement.srcObject = remoteStream;
+            // Initially muted to help with autoplay
+            videoElement.muted = true;
             
-            // Use play() with catch and retry logic
-            const attemptPlay = () => {
+            // Use play() with catch, retry logic and max attempts
+            const attemptPlay = (attempts = 0, delay = 200) => {
+              if (attempts >= 5) {
+                console.warn(`Max retry attempts reached for peer ${peerId}`);
+                return;
+              }
+              
               videoElement.play()
                 .catch(err => {
-                  if (err.name === 'AbortError') {
-                    console.warn("Play was aborted, retrying in 200ms");
-                    setTimeout(attemptPlay, 200);
+                  if (err.name === 'AbortError' && attempts < 5) {
+                    console.warn(`Play was aborted for peer ${peerId} (attempt ${attempts+1}/5), retrying in ${delay}ms`);
+                    setTimeout(() => attemptPlay(attempts + 1, delay * 1.5), delay);
                   } else {
                     console.error("Error playing remote video:", err);
                   }
@@ -402,6 +419,43 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
     const caller = activeCallers.find(c => c.peerId === peerId);
     return caller ? caller.userName : `User ${peerId.split('-')[1]}`;
   };
+  
+  // Additional state to manage muted status
+  const [remoteMuted, setRemoteMuted] = useState<boolean>(true);
+
+  // Function to safely unmute videos once they're playing
+  const safelyUnmuteVideos = () => {
+    // Wait a moment after components have rendered
+    setTimeout(() => {
+      // Only try to unmute if we're supposed to hear remote participants
+      if (!remoteMuted) {
+        // Get all remote video elements
+        Object.entries(peerVideoRefs.current).forEach(([peerId, el]) => {
+          if (el) {
+            // First ensure it's playing
+            if (el.paused) {
+              el.play().catch(err => console.warn(`Cannot play remote video for ${peerId} before unmuting:`, err));
+            }
+            // Then try to unmute
+            el.muted = false;
+          }
+        });
+      }
+    }, 1000);
+  };
+
+  // Add effect to handle unmuting after connection is established
+  useEffect(() => {
+    if (connectedPeers.length > 0 && !isConnecting) {
+      // Wait 2 seconds after peers are connected to unmute
+      const timer = setTimeout(() => {
+        setRemoteMuted(false);
+        safelyUnmuteVideos();
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [connectedPeers.length, isConnecting]);
   
   return (
     <div className="video-call-container">
@@ -454,12 +508,19 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
                       const conn = peerConnections.current[peerId];
                       if (conn && el && !el.srcObject && conn.remoteStream) {
                         el.srcObject = conn.remoteStream;
-                        // Use the same play with retry approach
-                        const attemptPlay = () => {
+                        // Initially muted to help with autoplay
+                        el.muted = true;
+                        // Use the same play with retry approach and max attempts
+                        const attemptPlay = (attempts = 0, delay = 200) => {
+                          if (attempts >= 5) {
+                            console.warn(`Max retry attempts reached for peer ${peerId}`);
+                            return;
+                          }
+                          
                           el.play().catch(err => {
-                            if (err.name === 'AbortError') {
-                              console.warn("Play was aborted, retrying in 200ms");
-                              setTimeout(attemptPlay, 200);
+                            if (err.name === 'AbortError' && attempts < 5) {
+                              console.warn(`Play was aborted for peer ${peerId} (attempt ${attempts+1}/5), retrying in ${delay}ms`);
+                              setTimeout(() => attemptPlay(attempts + 1, delay * 1.5), delay);
                             } else {
                               console.error("Error playing remote video:", err);
                             }
@@ -470,6 +531,7 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
                     }}
                     autoPlay
                     playsInline
+                    muted // Start muted to help with autoplay policies
                   />
                   <div className="video-label">{getPeerName(peerId)}</div>
                 </div>
