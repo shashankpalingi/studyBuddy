@@ -27,6 +27,9 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
   const [isScreenSharing, setIsScreenSharing] = useState<boolean>(false);
   const [isConnecting, setIsConnecting] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
+  const [focusedPeerId, setFocusedPeerId] = useState<string | null>(null);
+  const [remoteMuted, setRemoteMuted] = useState<boolean>(true);
+  const [connectionStatus, setConnectionStatus] = useState<Record<string, string>>({});
   
   const myVideoRef = useRef<HTMLVideoElement>(null);
   const peerRef = useRef<Peer | null>(null);
@@ -65,9 +68,13 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
   useEffect(() => {
     if (!currentUser || !roomId) return;
     
+    let peerInstance: Peer | null = null;
+    
     const initializePeer = async () => {
       try {
         setIsConnecting(true);
+        setConnectionStatus({});
+        
         // Get user media stream
         const stream = await navigator.mediaDevices.getUserMedia({ 
           video: true, 
@@ -78,7 +85,22 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
         
         // Create peer connection with unique ID based on user and room
         const peerId = `${roomId}-${currentUser.uid}`;
-        const peer = new Peer(peerId);
+        
+        // Clean up any existing peer connection
+        if (peerRef.current) {
+          peerRef.current.destroy();
+        }
+        
+        const peer = new Peer(peerId, {
+          config: {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:global.stun.twilio.com:3478?transport=udp' }
+            ]
+          }
+        });
+        
+        peerInstance = peer;
         
         peer.on('open', async (id) => {
           console.log('My peer ID is:', id);
@@ -95,12 +117,16 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
             );
           } catch (err) {
             console.error('Failed to register as caller:', err);
-            // Continue with the call even if registration fails
-            // The P2P connection can still work without Firebase tracking
           }
           
           // Listen for incoming calls
           peer.on('call', (call) => {
+            // Update connection status
+            setConnectionStatus(prev => ({
+              ...prev, 
+              [call.peer]: 'connecting'
+            }));
+            
             // Answer the call with our stream
             call.answer(streamRef.current!);
             
@@ -108,12 +134,26 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
             call.on('stream', (remoteStream) => {
               // Extract the caller's ID from their peer ID
               const callerId = call.peer;
+              
+              // Only add peer if not already connected
               if (!connectedPeers.includes(callerId)) {
+                console.log(`Received stream from peer: ${callerId}`);
                 setConnectedPeers(prev => [...prev, callerId]);
+                
+                // If this is the first peer and we don't have a focused peer yet, focus on them
+                if (connectedPeers.length === 0 && !focusedPeerId) {
+                  setFocusedPeerId(callerId);
+                }
               }
               
               // Store the connection
               peerConnections.current[callerId] = call;
+              
+              // Update connection status
+              setConnectionStatus(prev => ({
+                ...prev, 
+                [callerId]: 'connected'
+              }));
               
               // More reliable approach to attach the stream to the video element
               setTimeout(() => {
@@ -122,11 +162,17 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
                   // Only set srcObject if it's not already set to avoid unnecessary reload
                   if (videoElement.srcObject !== remoteStream) {
                     videoElement.srcObject = remoteStream;
+                    // Initially muted to help with autoplay
+                    videoElement.muted = true;
                     
                     // Use play() with catch, retry logic and max attempts
                     const attemptPlay = (attempts = 0, delay = 200) => {
                       if (attempts >= 5) {
                         console.warn(`Max retry attempts reached for peer ${callerId}`);
+                        setConnectionStatus(prev => ({
+                          ...prev, 
+                          [callerId]: 'error'
+                        }));
                         return;
                       }
                       
@@ -137,6 +183,10 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
                             setTimeout(() => attemptPlay(attempts + 1, delay * 1.5), delay);
                           } else {
                             console.error("Error playing remote video:", err);
+                            setConnectionStatus(prev => ({
+                              ...prev, 
+                              [callerId]: 'error'
+                            }));
                           }
                         });
                     };
@@ -144,20 +194,57 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
                     attemptPlay();
                   }
                 }
-              }, 300); // Increased timeout to ensure DOM is ready
+              }, 500); // Increased timeout for better DOM stability
+            });
+            
+            // Handle call close/error
+            call.on('close', () => {
+              const callerId = call.peer;
+              console.log(`Call closed with peer: ${callerId}`);
+              setConnectedPeers(prev => prev.filter(id => id !== callerId));
+              
+              // If this was the focused peer, reset focused peer
+              if (focusedPeerId === callerId) {
+                setFocusedPeerId(null);
+              }
+              
+              delete peerConnections.current[callerId];
+              setConnectionStatus(prev => ({
+                ...prev,
+                [callerId]: 'disconnected'
+              }));
+            });
+            
+            call.on('error', (err) => {
+              const callerId = call.peer;
+              console.error(`Call error with peer ${callerId}:`, err);
+              setConnectionStatus(prev => ({
+                ...prev,
+                [callerId]: 'error'
+              }));
             });
           });
           
+          // Handle peer errors
           peer.on('error', (err) => {
             console.error('PeerJS error:', err);
             setError(`Connection error: ${err.message}`);
             setIsConnecting(false);
           });
           
+          // Handle peer disconnection
+          peer.on('disconnected', () => {
+            console.log('Peer disconnected. Attempting to reconnect...');
+            try {
+              peer.reconnect();
+            } catch (err) {
+              console.error('Failed to reconnect peer:', err);
+              setError('Connection lost. Please try rejoining the call.');
+            }
+          });
+          
           setIsConnecting(false);
         });
-        
-        return peer;
       } catch (err) {
         console.error('Error setting up video call:', err);
         
@@ -174,22 +261,26 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
       }
     };
     
-    const peer = initializePeer();
+    initializePeer();
     
     return () => {
       // Clean up
       streamRef.current?.getTracks().forEach(track => track.stop());
+      screenStreamRef.current?.getTracks().forEach(track => track.stop());
       
-      if (peerRef.current) {
-        peerRef.current.destroy();
+      // Close all peer connections
+      Object.values(peerConnections.current).forEach(connection => {
+        connection.close();
+      });
+      
+      if (peerInstance) {
+        peerInstance.destroy();
       }
       
       // Unregister from active callers
       if (currentUser && roomId) {
-        // Try to unregister but don't block on it
         VideoCallService.unregisterCaller(roomId, currentUser.uid).catch(err => {
           console.error('Failed to unregister caller:', err);
-          // We can safely ignore this error during cleanup
         });
       }
     };
@@ -204,17 +295,9 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
         setActiveCallers(callers);
       });
       
-      return () => {
-        try {
-          unsubscribe();
-        } catch (err) {
-          console.error('Error unsubscribing from active callers:', err);
-        }
-      };
+      return unsubscribe;
     } catch (err) {
       console.error('Error subscribing to active callers:', err);
-      // Continue without active callers subscription
-      // The P2P connection can still work directly
       return () => {};
     }
   }, [roomId]);
@@ -233,13 +316,46 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
       
       // Connect to each new caller
       newCallers.forEach(caller => {
-        console.log(`Calling peer: ${caller.peerId}`);
+        console.log(`Initiating call to peer: ${caller.peerId}`);
+        setConnectionStatus(prev => ({
+          ...prev,
+          [caller.peerId]: 'calling'
+        }));
         callPeer(caller.peerId);
       });
     };
     
     connectToNewCallers();
   }, [activeCallers, connectedPeers, myPeerId, currentUser]);
+  
+  // Add effect to handle unmuting after connection is established
+  useEffect(() => {
+    if (connectedPeers.length > 0 && !isConnecting) {
+      // Wait a bit after peers are connected to unmute
+      const timer = setTimeout(() => {
+        setRemoteMuted(false);
+        safelyUnmuteVideos();
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [connectedPeers.length, isConnecting]);
+  
+  // Function to safely unmute videos once they're playing
+  const safelyUnmuteVideos = () => {
+    setTimeout(() => {
+      if (!remoteMuted) {
+        Object.entries(peerVideoRefs.current).forEach(([peerId, el]) => {
+          if (el) {
+            if (el.paused) {
+              el.play().catch(err => console.warn(`Cannot play remote video for ${peerId} before unmuting:`, err));
+            }
+            el.muted = false;
+          }
+        });
+      }
+    }, 1000);
+  };
   
   const toggleAudio = () => {
     if (streamRef.current) {
@@ -349,12 +465,25 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
     const call = peerRef.current.call(peerId, streamRef.current);
     
     call.on('stream', (remoteStream) => {
+      console.log(`Received stream from called peer: ${peerId}`);
+      
       if (!connectedPeers.includes(peerId)) {
         setConnectedPeers(prev => [...prev, peerId]);
+        
+        // If this is the first peer and we don't have a focused peer yet, focus on them
+        if (connectedPeers.length === 0 && !focusedPeerId) {
+          setFocusedPeerId(peerId);
+        }
       }
       
       // Store the connection
       peerConnections.current[peerId] = call;
+      
+      // Update connection status
+      setConnectionStatus(prev => ({
+        ...prev,
+        [peerId]: 'connected'
+      }));
       
       // More reliable approach to attach the stream to the video element
       setTimeout(() => {
@@ -370,6 +499,10 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
             const attemptPlay = (attempts = 0, delay = 200) => {
               if (attempts >= 5) {
                 console.warn(`Max retry attempts reached for peer ${peerId}`);
+                setConnectionStatus(prev => ({
+                  ...prev,
+                  [peerId]: 'error'
+                }));
                 return;
               }
               
@@ -380,6 +513,10 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
                     setTimeout(() => attemptPlay(attempts + 1, delay * 1.5), delay);
                   } else {
                     console.error("Error playing remote video:", err);
+                    setConnectionStatus(prev => ({
+                      ...prev,
+                      [peerId]: 'error'
+                    }));
                   }
                 });
             };
@@ -387,18 +524,38 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
             attemptPlay();
           }
         }
-      }, 300); // Increased timeout to ensure DOM is ready
+      }, 500); // Increased timeout for better DOM stability
     });
     
     call.on('close', () => {
+      console.log(`Call closed with called peer: ${peerId}`);
       setConnectedPeers(prev => prev.filter(id => id !== peerId));
+      
+      // If this was the focused peer, reset focused peer
+      if (focusedPeerId === peerId) {
+        setFocusedPeerId(null);
+      }
+      
       delete peerConnections.current[peerId];
+      setConnectionStatus(prev => ({
+        ...prev,
+        [peerId]: 'disconnected'
+      }));
+    });
+    
+    call.on('error', (err) => {
+      console.error(`Call error with called peer ${peerId}:`, err);
+      setConnectionStatus(prev => ({
+        ...prev,
+        [peerId]: 'error'
+      }));
     });
   };
   
   const handleEndCall = () => {
     // Stop all media tracks
     streamRef.current?.getTracks().forEach(track => track.stop());
+    screenStreamRef.current?.getTracks().forEach(track => track.stop());
     
     // Close all peer connections
     Object.values(peerConnections.current).forEach(connection => {
@@ -420,42 +577,34 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
     return caller ? caller.userName : `User ${peerId.split('-')[1]}`;
   };
   
-  // Additional state to manage muted status
-  const [remoteMuted, setRemoteMuted] = useState<boolean>(true);
-
-  // Function to safely unmute videos once they're playing
-  const safelyUnmuteVideos = () => {
-    // Wait a moment after components have rendered
-    setTimeout(() => {
-      // Only try to unmute if we're supposed to hear remote participants
-      if (!remoteMuted) {
-        // Get all remote video elements
-        Object.entries(peerVideoRefs.current).forEach(([peerId, el]) => {
-          if (el) {
-            // First ensure it's playing
-            if (el.paused) {
-              el.play().catch(err => console.warn(`Cannot play remote video for ${peerId} before unmuting:`, err));
-            }
-            // Then try to unmute
-            el.muted = false;
-          }
-        });
-      }
-    }, 1000);
+  // Focus on a specific peer video (or set to null for grid view)
+  const handleFocusVideo = (peerId: string | null) => {
+    setFocusedPeerId(peerId === focusedPeerId ? null : peerId);
   };
-
-  // Add effect to handle unmuting after connection is established
-  useEffect(() => {
-    if (connectedPeers.length > 0 && !isConnecting) {
-      // Wait 2 seconds after peers are connected to unmute
-      const timer = setTimeout(() => {
-        setRemoteMuted(false);
-        safelyUnmuteVideos();
-      }, 2000);
-      
-      return () => clearTimeout(timer);
+  
+  // Determine appropriate layout based on participant count
+  const getParticipantCount = () => {
+    // Count all participants (local user + remote peers)
+    return 1 + connectedPeers.length;
+  };
+  
+  // Get connection status icon/text
+  const getConnectionStatusIndicator = (peerId: string) => {
+    const status = connectionStatus[peerId] || 'unknown';
+    
+    switch (status) {
+      case 'connecting':
+        return <div className="connection-status connecting">Connecting...</div>;
+      case 'calling':
+        return <div className="connection-status calling">Calling...</div>;
+      case 'error':
+        return <div className="connection-status error">Connection error</div>;
+      case 'disconnected':
+        return <div className="connection-status disconnected">Disconnected</div>;
+      default:
+        return null;
     }
-  }, [connectedPeers.length, isConnecting]);
+  };
   
   return (
     <div className="video-call-container">
@@ -483,60 +632,168 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
           </div>
           
           <div className="video-main-area">
-            {/* Grid layout for all participants */}
-            <div className={`videos-grid participants-${Math.min(activeCallers.length, 4)}`}>
-              {/* Local user's video */}
-              <div className="video-wrapper self-video">
-                <video 
-                  ref={myVideoRef}
-                  autoPlay
-                  muted
-                  playsInline
-                  className={isVideoEnabled ? "" : "video-disabled"}
-                />
-                <div className="video-label">You</div>
-                {!isVideoEnabled && <div className="video-off-indicator">Camera Off</div>}
-              </div>
-
-              {/* Remote peers' videos */}
-              {connectedPeers.map(peerId => (
-                <div key={peerId} className="video-wrapper">
-                  <video
-                    ref={el => {
-                      peerVideoRefs.current[peerId] = el;
-                      // If we already have a stream for this peer, assign it now
-                      const conn = peerConnections.current[peerId];
-                      if (conn && el && !el.srcObject && conn.remoteStream) {
-                        el.srcObject = conn.remoteStream;
-                        // Initially muted to help with autoplay
-                        el.muted = true;
-                        // Use the same play with retry approach and max attempts
-                        const attemptPlay = (attempts = 0, delay = 200) => {
-                          if (attempts >= 5) {
-                            console.warn(`Max retry attempts reached for peer ${peerId}`);
-                            return;
-                          }
-                          
-                          el.play().catch(err => {
-                            if (err.name === 'AbortError' && attempts < 5) {
-                              console.warn(`Play was aborted for peer ${peerId} (attempt ${attempts+1}/5), retrying in ${delay}ms`);
-                              setTimeout(() => attemptPlay(attempts + 1, delay * 1.5), delay);
-                            } else {
-                              console.error("Error playing remote video:", err);
-                            }
-                          });
-                        };
-                        attemptPlay();
-                      }
-                    }}
-                    autoPlay
-                    playsInline
-                    muted // Start muted to help with autoplay policies
-                  />
-                  <div className="video-label">{getPeerName(peerId)}</div>
+            {/* Focus view or grid layout */}
+            {focusedPeerId ? (
+              <div className="video-focus-layout">
+                {/* Main focused video */}
+                <div className="focus-video-container">
+                  {focusedPeerId === 'local' ? (
+                    <div className="video-wrapper focused">
+                      <video
+                        ref={myVideoRef}
+                        autoPlay
+                        muted
+                        playsInline
+                        className={isVideoEnabled ? "" : "video-disabled"}
+                      />
+                      <div className="video-label">You {isScreenSharing ? '(Sharing Screen)' : ''}</div>
+                      {!isVideoEnabled && <div className="video-off-indicator">Camera Off</div>}
+                      <div className="focus-control">
+                        <button className="unfocus-button" onClick={() => handleFocusVideo(null)}>
+                          <span>Exit Focus View</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="video-wrapper focused">
+                      <video
+                        ref={el => peerVideoRefs.current[focusedPeerId!] = el}
+                        autoPlay
+                        playsInline
+                        muted={remoteMuted}
+                      />
+                      <div className="video-label">{getPeerName(focusedPeerId)}</div>
+                      {getConnectionStatusIndicator(focusedPeerId)}
+                      <div className="focus-control">
+                        <button className="unfocus-button" onClick={() => handleFocusVideo(null)}>
+                          <span>Exit Focus View</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
+                
+                {/* Thumbnails strip */}
+                <div className="thumbnails-container">
+                  {/* Local user thumbnail */}
+                  <div className={`video-thumbnail ${focusedPeerId === 'local' ? 'active' : ''}`} onClick={() => handleFocusVideo('local')}>
+                    <video
+                      ref={focusedPeerId !== 'local' ? myVideoRef : undefined}
+                      autoPlay
+                      muted
+                      playsInline
+                      className={isVideoEnabled ? "" : "video-disabled"}
+                    />
+                    <div className="thumbnail-label">You</div>
+                    {!isVideoEnabled && <div className="thumbnail-off-indicator">Off</div>}
+                  </div>
+                  
+                  {/* Remote peers thumbnails */}
+                  {connectedPeers.map(peerId => (
+                    peerId !== focusedPeerId && (
+                      <div 
+                        key={peerId} 
+                        className={`video-thumbnail ${connectionStatus[peerId] === 'error' ? 'error' : ''}`}
+                        onClick={() => handleFocusVideo(peerId)}
+                      >
+                        <video
+                          ref={el => {
+                            if (peerId !== focusedPeerId) {
+                              peerVideoRefs.current[peerId] = el;
+                              // Auto-connect stream if available
+                              const conn = peerConnections.current[peerId];
+                              if (conn && el && !el.srcObject && conn.remoteStream) {
+                                el.srcObject = conn.remoteStream;
+                                el.muted = remoteMuted;
+                                el.play().catch(err => console.warn(`Error playing thumbnail: ${err.message}`));
+                              }
+                            }
+                          }}
+                          autoPlay
+                          playsInline
+                          muted={remoteMuted}
+                        />
+                        <div className="thumbnail-label">{getPeerName(peerId)}</div>
+                        {connectionStatus[peerId] === 'error' && <div className="thumbnail-error-indicator">Error</div>}
+                      </div>
+                    )
+                  ))}
+                </div>
+              </div>
+            ) : (
+              /* Grid layout for all participants */
+              <div className={`videos-grid participants-${getParticipantCount()}`}>
+                {/* Local user's video */}
+                <div 
+                  className="video-wrapper self-video" 
+                  onClick={() => handleFocusVideo('local')}
+                >
+                  <video 
+                    ref={myVideoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    className={isVideoEnabled ? "" : "video-disabled"}
+                  />
+                  <div className="video-label">You {isScreenSharing ? '(Sharing Screen)' : ''}</div>
+                  {!isVideoEnabled && <div className="video-off-indicator">Camera Off</div>}
+                  <div className="focus-icon" title="Focus on this video">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="22 3 2 3 2 21 22 21 22 3"></polygon>
+                      <path d="M15 9l-6 6"></path>
+                      <path d="M9 9l0 0"></path>
+                      <path d="M15 15l0 0"></path>
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Remote peers' videos */}
+                {connectedPeers.map(peerId => (
+                  <div 
+                    key={peerId} 
+                    className={`video-wrapper ${connectionStatus[peerId] === 'error' ? 'error' : ''}`}
+                    onClick={() => handleFocusVideo(peerId)}
+                  >
+                    <video
+                      ref={el => {
+                        peerVideoRefs.current[peerId] = el;
+                        // Auto-connect stream if available
+                        const conn = peerConnections.current[peerId];
+                        if (conn && el && !el.srcObject && conn.remoteStream) {
+                          el.srcObject = conn.remoteStream;
+                          el.muted = remoteMuted;
+                          
+                          const attemptPlay = (attempts = 0, delay = 200) => {
+                            if (attempts >= 5) return;
+                            
+                            el.play().catch(err => {
+                              if (err.name === 'AbortError' && attempts < 5) {
+                                setTimeout(() => attemptPlay(attempts + 1, delay * 1.5), delay);
+                              }
+                            });
+                          };
+                          
+                          attemptPlay();
+                        }
+                      }}
+                      autoPlay
+                      playsInline
+                      muted={remoteMuted}
+                    />
+                    <div className="video-label">{getPeerName(peerId)}</div>
+                    {getConnectionStatusIndicator(peerId)}
+                    <div className="focus-icon" title="Focus on this video">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="22 3 2 3 2 21 22 21 22 3"></polygon>
+                        <path d="M15 9l-6 6"></path>
+                        <path d="M9 9l0 0"></path>
+                        <path d="M15 15l0 0"></path>
+                      </svg>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Message overlays */}
             {activeCallers.length <= 1 && (
@@ -552,6 +809,7 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
             <button 
               className={`control-button ${!isAudioEnabled ? 'disabled' : ''}`}
               onClick={toggleAudio}
+              title={isAudioEnabled ? "Mute microphone" : "Unmute microphone"}
             >
               {isAudioEnabled ? <Mic size={20} /> : <MicOff size={20} />}
             </button>
@@ -559,6 +817,7 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
             <button 
               className={`control-button ${!isVideoEnabled ? 'disabled' : ''}`}
               onClick={toggleVideo}
+              title={isVideoEnabled ? "Turn off camera" : "Turn on camera"}
             >
               {isVideoEnabled ? <VideoIcon size={20} /> : <VideoOff size={20} />}
             </button>
@@ -566,6 +825,7 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
             <button 
               className={`control-button ${isScreenSharing ? 'active' : ''}`}
               onClick={toggleScreenShare}
+              title={isScreenSharing ? "Stop sharing screen" : "Share screen"}
             >
               {isScreenSharing ? <MonitorOff size={20} /> : <Monitor size={20} />}
             </button>
@@ -573,6 +833,7 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
             <button 
               className="control-button end-call"
               onClick={handleEndCall}
+              title="End call"
             >
               <Phone size={20} />
             </button>
