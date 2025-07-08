@@ -39,9 +39,20 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
   useEffect(() => {
     if (streamRef.current && myVideoRef.current) {
       myVideoRef.current.srcObject = streamRef.current;
-      myVideoRef.current.play().catch(err => {
-        console.error("Error playing local video from useEffect:", err);
-      });
+      
+      // Use the same play with retry approach
+      const attemptPlay = () => {
+        myVideoRef.current?.play().catch(err => {
+          if (err.name === 'AbortError') {
+            console.warn("Local video play was aborted, retrying in 200ms");
+            setTimeout(attemptPlay, 200);
+          } else {
+            console.error("Error playing local video from useEffect:", err);
+          }
+        });
+      };
+      
+      attemptPlay();
     }
   }, [streamRef.current, myVideoRef.current]);
   
@@ -99,17 +110,31 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
               // Store the connection
               peerConnections.current[callerId] = call;
               
-              // Schedule attaching the stream to the element in the next frame
-              // This ensures the element exists in the DOM
+              // More reliable approach to attach the stream to the video element
               setTimeout(() => {
                 const videoElement = peerVideoRefs.current[callerId];
                 if (videoElement) {
-                  videoElement.srcObject = remoteStream;
-                  videoElement.play().catch(err => {
-                    console.error("Error playing remote video:", err);
-                  });
+                  // Only set srcObject if it's not already set to avoid unnecessary reload
+                  if (videoElement.srcObject !== remoteStream) {
+                    videoElement.srcObject = remoteStream;
+                    
+                    // Use play() with catch and retry logic
+                    const attemptPlay = () => {
+                      videoElement.play()
+                        .catch(err => {
+                          if (err.name === 'AbortError') {
+                            console.warn("Play was aborted, retrying in 200ms");
+                            setTimeout(attemptPlay, 200);
+                          } else {
+                            console.error("Error playing remote video:", err);
+                          }
+                        });
+                    };
+                    
+                    attemptPlay();
+                  }
                 }
-              }, 100);
+              }, 300); // Increased timeout to ensure DOM is ready
             });
           });
           
@@ -321,17 +346,31 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
       // Store the connection
       peerConnections.current[peerId] = call;
       
-      // Schedule attaching the stream to the element in the next frame
-      // This ensures the element exists in the DOM
+      // More reliable approach to attach the stream to the video element
       setTimeout(() => {
         const videoElement = peerVideoRefs.current[peerId];
         if (videoElement) {
-          videoElement.srcObject = remoteStream;
-          videoElement.play().catch(err => {
-            console.error("Error playing remote video:", err);
-          });
+          // Only set srcObject if it's not already set to avoid unnecessary reload
+          if (videoElement.srcObject !== remoteStream) {
+            videoElement.srcObject = remoteStream;
+            
+            // Use play() with catch and retry logic
+            const attemptPlay = () => {
+              videoElement.play()
+                .catch(err => {
+                  if (err.name === 'AbortError') {
+                    console.warn("Play was aborted, retrying in 200ms");
+                    setTimeout(attemptPlay, 200);
+                  } else {
+                    console.error("Error playing remote video:", err);
+                  }
+                });
+            };
+            
+            attemptPlay();
+          }
         }
-      }, 100);
+      }, 300); // Increased timeout to ensure DOM is ready
     });
     
     call.on('close', () => {
@@ -415,7 +454,18 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
                       const conn = peerConnections.current[peerId];
                       if (conn && el && !el.srcObject && conn.remoteStream) {
                         el.srcObject = conn.remoteStream;
-                        el.play().catch(err => console.error("Error playing remote video:", err));
+                        // Use the same play with retry approach
+                        const attemptPlay = () => {
+                          el.play().catch(err => {
+                            if (err.name === 'AbortError') {
+                              console.warn("Play was aborted, retrying in 200ms");
+                              setTimeout(attemptPlay, 200);
+                            } else {
+                              console.error("Error playing remote video:", err);
+                            }
+                          });
+                        };
+                        attemptPlay();
                       }
                     }}
                     autoPlay
