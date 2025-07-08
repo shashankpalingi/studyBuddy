@@ -49,6 +49,7 @@
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
     "dotenv": "^17.0.1",
+    "embla-carousel-auto-scroll": "^8.0.0-rc14",
     "embla-carousel-react": "^8.3.0",
     "firebase": "^11.9.1",
     "firebase-admin": "^13.4.0",
