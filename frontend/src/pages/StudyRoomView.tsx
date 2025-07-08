@@ -254,7 +254,7 @@ const StudyRoomView: React.FC = () => {
               {sidebarMinimized ? '→' : '←'}
             </button>
           </div>
-          
+
           <div className="sidebar-nav">
             <button
               onClick={() => setActiveFeature('notes')}
