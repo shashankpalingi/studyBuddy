@@ -1,5 +1,6 @@
 
 import { useEffect, useRef, useState } from 'react';
+import { GlowCard } from './ui/spotlight-card';
 
 const CTASection = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -57,27 +58,29 @@ const CTASection = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
-            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 text-center">
+            <GlowCard glowColor="orange" customSize={true} className="p-4 text-center">
               <div className="w-12 h-12 bg-yellow-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i className="ri-group-line text-3xl text-yellow-400"></i>
               </div>
               <h3 className="text-white text-2xl font-bold mb-2">10K+</h3>
               <p className="text-gray-400">Active Students</p>
-            </div>
-            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 text-center">
+            </GlowCard>
+            
+            <GlowCard glowColor="blue" customSize={true} className="p-4 text-center">
               <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i className="ri-book-open-line text-3xl text-primary"></i>
               </div>
               <h3 className="text-white text-2xl font-bold mb-2">500+</h3>
               <p className="text-gray-400">Study Rooms</p>
-            </div>
-            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 text-center">
+            </GlowCard>
+            
+            <GlowCard glowColor="green" customSize={true} className="p-4 text-center">
               <div className="w-12 h-12 bg-green-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i className="ri-medal-line text-3xl text-green-400"></i>
               </div>
               <h3 className="text-white text-2xl font-bold mb-2">95%</h3>
               <p className="text-gray-400">Success Rate</p>
-            </div>
+            </GlowCard>
           </div>
         </div>
 

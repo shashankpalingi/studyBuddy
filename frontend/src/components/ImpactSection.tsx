@@ -1,5 +1,6 @@
 
 import { useEffect, useRef, useState } from 'react';
+import { GlowCard } from './ui/spotlight-card';
 
 const ImpactSection = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -39,8 +40,7 @@ const ImpactSection = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-          <div className="bg-gray-800 rounded-xl p-8 relative overflow-hidden">
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 rounded-full"></div>
+          <GlowCard glowColor="purple" customSize={true} className="h-full">
             <div className="relative z-10">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center">
@@ -56,10 +56,9 @@ const ImpactSection = () => {
                 collaborating in real-time with video calls, shared whiteboards, and interactive tools.
               </p>
             </div>
-          </div>
+          </GlowCard>
 
-          <div className="bg-gray-800 rounded-xl p-8 relative overflow-hidden">
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-yellow-400/20 rounded-full"></div>
+          <GlowCard glowColor="orange" customSize={true} className="h-full">
             <div className="relative z-10">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center">
@@ -75,39 +74,45 @@ const ImpactSection = () => {
                 task management tools, and AI-powered study assistance.
               </p>
             </div>
-          </div>
+          </GlowCard>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-gray-800 rounded-xl p-6 transform hover:-translate-y-2 transition-transform duration-300">
+          <GlowCard glowColor="blue" customSize={true} className="h-full">
             <div className="w-12 h-12 bg-blue-400 rounded-full flex items-center justify-center mb-4">
               <i className="ri-vidicon-line text-2xl text-white"></i>
             </div>
-            <h4 className="text-xl font-bold text-white mb-2">Real-time Collaboration</h4>
-            <p className="text-gray-400">
-              Connect instantly through video calls, chat, and interactive whiteboards for seamless group study sessions.
-            </p>
-          </div>
+            <div>
+              <h4 className="text-xl font-bold text-white mb-2">Real-time Collaboration</h4>
+              <p className="text-gray-400">
+                Connect instantly through video calls, chat, and interactive whiteboards for seamless group study sessions.
+              </p>
+            </div>
+          </GlowCard>
 
-          <div className="bg-gray-800 rounded-xl p-6 transform hover:-translate-y-2 transition-transform duration-300">
+          <GlowCard glowColor="green" customSize={true} className="h-full">
             <div className="w-12 h-12 bg-green-400 rounded-full flex items-center justify-center mb-4">
               <i className="ri-ai-generate text-2xl text-white"></i>
             </div>
-            <h4 className="text-xl font-bold text-white mb-2">AI Study Assistant</h4>
-            <p className="text-gray-400">
-              Get intelligent study recommendations and answers to your questions with our AI-powered assistant.
-            </p>
-          </div>
+            <div>
+              <h4 className="text-xl font-bold text-white mb-2">AI Study Assistant</h4>
+              <p className="text-gray-400">
+                Get intelligent study recommendations and answers to your questions with our AI-powered assistant.
+              </p>
+            </div>
+          </GlowCard>
 
-          <div className="bg-gray-800 rounded-xl p-6 transform hover:-translate-y-2 transition-transform duration-300">
+          <GlowCard glowColor="purple" customSize={true} className="h-full">
             <div className="w-12 h-12 bg-pink-400 rounded-full flex items-center justify-center mb-4">
               <i className="ri-tools-line text-2xl text-white"></i>
             </div>
-            <h4 className="text-xl font-bold text-white mb-2">Study Tools</h4>
-            <p className="text-gray-400">
-              Stay organized with task management, study timers, polls, and YouTube watch-together features.
-            </p>
-          </div>
+            <div>
+              <h4 className="text-xl font-bold text-white mb-2">Study Tools</h4>
+              <p className="text-gray-400">
+                Stay organized with task management, study timers, polls, and YouTube watch-together features.
+              </p>
+            </div>
+          </GlowCard>
         </div>
       </div>
     </section>
