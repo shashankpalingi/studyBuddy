@@ -30,11 +30,11 @@ const ImpactSection = () => {
         <div className="mb-16 relative">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             EMPOWERING <span className="bg-primary px-4 py-1 rounded-full text-white">STUDENTS</span> TO<br />
-            ACHIEVE THEIR <span className="text-yellow-400">DREAMS</span>
+            EXCEL <span className="text-yellow-400">TOGETHER</span>
           </h2>
           <p className="text-gray-300 text-xl max-w-2xl">
-            Our platform has helped thousands of students worldwide reach their full potential
-            and achieve remarkable educational milestones.
+            Our collaborative study platform brings students together, fostering peer learning
+            and creating an engaging environment for academic success.
           </p>
         </div>
 
@@ -44,16 +44,16 @@ const ImpactSection = () => {
             <div className="relative z-10">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center">
-                  <i className="ri-user-star-line text-3xl text-white"></i>
+                  <i className="ri-team-line text-3xl text-white"></i>
                 </div>
                 <div>
-                  <h3 className="text-3xl font-bold text-white">95%</h3>
-                  <p className="text-gray-400">Student Success Rate</p>
+                  <h3 className="text-3xl font-bold text-white">10K+</h3>
+                  <p className="text-gray-400">Active Study Groups</p>
                 </div>
               </div>
               <p className="text-gray-300">
-                Our students consistently achieve their academic goals through personalized learning paths
-                and dedicated support from expert instructors.
+                Students are forming dynamic study groups across various subjects,
+                collaborating in real-time with video calls, shared whiteboards, and interactive tools.
               </p>
             </div>
           </div>
@@ -63,16 +63,16 @@ const ImpactSection = () => {
             <div className="relative z-10">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center">
-                  <i className="ri-medal-line text-3xl text-white"></i>
+                  <i className="ri-timer-line text-3xl text-white"></i>
                 </div>
                 <div>
-                  <h3 className="text-3xl font-bold text-white">50K+</h3>
-                  <p className="text-gray-400">Certified Graduates</p>
+                  <h3 className="text-3xl font-bold text-white">1M+</h3>
+                  <p className="text-gray-400">Study Hours</p>
                 </div>
               </div>
               <p className="text-gray-300">
-                Join our growing community of successful graduates who have transformed their careers
-                through our comprehensive educational programs.
+                Students are maximizing their productivity with our focused study timers,
+                task management tools, and AI-powered study assistance.
               </p>
             </div>
           </div>
@@ -81,31 +81,31 @@ const ImpactSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-gray-800 rounded-xl p-6 transform hover:-translate-y-2 transition-transform duration-300">
             <div className="w-12 h-12 bg-blue-400 rounded-full flex items-center justify-center mb-4">
-              <i className="ri-global-line text-2xl text-white"></i>
+              <i className="ri-vidicon-line text-2xl text-white"></i>
             </div>
-            <h4 className="text-xl font-bold text-white mb-2">Global Reach</h4>
+            <h4 className="text-xl font-bold text-white mb-2">Real-time Collaboration</h4>
             <p className="text-gray-400">
-              Students from over 150 countries accessing quality education without boundaries.
+              Connect instantly through video calls, chat, and interactive whiteboards for seamless group study sessions.
             </p>
           </div>
 
           <div className="bg-gray-800 rounded-xl p-6 transform hover:-translate-y-2 transition-transform duration-300">
             <div className="w-12 h-12 bg-green-400 rounded-full flex items-center justify-center mb-4">
-              <i className="ri-book-open-line text-2xl text-white"></i>
+              <i className="ri-ai-generate text-2xl text-white"></i>
             </div>
-            <h4 className="text-xl font-bold text-white mb-2">Expert Instructors</h4>
+            <h4 className="text-xl font-bold text-white mb-2">AI Study Assistant</h4>
             <p className="text-gray-400">
-              Learn from industry professionals with years of experience in their fields.
+              Get intelligent study recommendations and answers to your questions with our AI-powered assistant.
             </p>
           </div>
 
           <div className="bg-gray-800 rounded-xl p-6 transform hover:-translate-y-2 transition-transform duration-300">
             <div className="w-12 h-12 bg-pink-400 rounded-full flex items-center justify-center mb-4">
-              <i className="ri-customer-service-line text-2xl text-white"></i>
+              <i className="ri-tools-line text-2xl text-white"></i>
             </div>
-            <h4 className="text-xl font-bold text-white mb-2">24/7 Support</h4>
+            <h4 className="text-xl font-bold text-white mb-2">Study Tools</h4>
             <p className="text-gray-400">
-              Round-the-clock assistance to ensure your learning journey stays on track.
+              Stay organized with task management, study timers, polls, and YouTube watch-together features.
             </p>
           </div>
         </div>

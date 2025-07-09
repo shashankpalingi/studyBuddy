@@ -29,12 +29,12 @@ const ProgramsSection = () => {
       }`}>
         <div className="mb-16 relative">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 relative z-10">
-            <span className="relative z-10">STUDY ROOMS FOR <br />
-            EVERY</span> <span className="bg-green-400 px-4 py-1 rounded-full text-gray-900 relative">SUBJECT</span>
+            <span className="relative z-10">INTERACTIVE STUDY <br />
+            ROOMS FOR</span> <span className="bg-green-400 px-4 py-1 rounded-full text-gray-900 relative">SUCCESS</span>
           </h2>
           <p className="text-gray-300 text-xl max-w-2xl">
-            Join subject-specific study rooms where you can collaborate with peers, share resources,
-            and prepare for exams together in an interactive environment.
+            Experience collaborative learning with our feature-rich study rooms. Connect with peers,
+            share knowledge, and achieve your academic goals together.
           </p>
           {/* Floating Element */}
           <div className="absolute -top-10 right-0 w-12 h-12 text-orange-400 animate-floating">
@@ -43,15 +43,15 @@ const ProgramsSection = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Study Groups Card */}
+          {/* Collaborative Learning Card */}
           <div className="bg-yellow-400 rounded-xl p-6 transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-xl">
             <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mb-4">
-              <i className="ri-group-line text-3xl text-white"></i>
+              <i className="ri-team-line text-3xl text-white"></i>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">Study Groups</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">Collaborative Learning</h3>
             <p className="text-gray-800 mb-4">
-              Create or join study groups for specific subjects. Share notes, discuss topics,
-              and solve problems together in real-time.
+              Engage in real-time video calls, chat discussions, and collaborative whiteboarding.
+              Work together seamlessly with screen sharing and interactive tools.
             </p>
             <a href="#" className="inline-flex items-center font-semibold text-gray-900 hover:text-gray-700 transition-colors">
               Learn more
@@ -61,15 +61,15 @@ const ProgramsSection = () => {
             </a>
           </div>
 
-          {/* Exam Prep Rooms Card */}
+          {/* Smart Study Tools Card */}
           <div className="bg-blue-400 rounded-xl p-6 transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-xl">
             <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mb-4">
-              <i className="ri-calendar-event-line text-3xl text-white"></i>
+              <i className="ri-ai-generate text-3xl text-white"></i>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">Exam Prep Rooms</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">Smart Study Tools</h3>
             <p className="text-gray-800 mb-4">
-              Dedicated rooms for exam preparation. Practice with past papers,
-              share exam strategies, and get peer support for better results.
+              Boost productivity with AI study assistance, task management, and focused study timers.
+              Track progress and stay organized with our intelligent tools.
             </p>
             <a href="#" className="inline-flex items-center font-semibold text-gray-900 hover:text-gray-700 transition-colors">
               Learn more
@@ -79,15 +79,15 @@ const ProgramsSection = () => {
             </a>
           </div>
 
-          {/* Resource Sharing Card */}
+          {/* Interactive Features Card */}
           <div className="bg-pink-400 rounded-xl p-6 transition-all duration-300 hover:transform hover:-translate-y-2 hover:shadow-xl">
             <div className="w-16 h-16 bg-pink-500 rounded-full flex items-center justify-center mb-4">
-              <i className="ri-book-open-line text-3xl text-white"></i>
+              <i className="ri-file-list-3-line text-3xl text-white"></i>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">Resource Sharing</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">Interactive Features</h3>
             <p className="text-gray-800 mb-4">
-              Share and access study materials, notes, and resources.
-              Collaborate on documents and create shared study guides.
+              Create polls, share files, watch YouTube together, and collaborate on notes in real-time.
+              Make learning engaging and effective with our interactive tools.
             </p>
             <a href="#" className="inline-flex items-center font-semibold text-gray-900 hover:text-gray-700 transition-colors">
               Learn more
