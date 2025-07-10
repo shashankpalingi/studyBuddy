@@ -562,10 +562,10 @@ const StudyRooms: React.FC = () => {
         )}
         
         {/* Hero Banner - replaced Spline component which was causing errors */}
-        <div className="relative h-64 md:h-80 mb-10 rounded-2xl overflow-hidden bg-gradient-to-r from-blue-500 to-purple-500 shadow-xl">
-          <div className="absolute inset-0 flex flex-col justify-center p-8 z-10">
+        <div className="relative h-48 md:h-64 mb-6 rounded-2xl overflow-hidden bg-gradient-to-r from-blue-500 to-purple-500 shadow-xl">
+          <div className="absolute inset-0 flex flex-col justify-center p-6 z-10">
             <motion.h1 
-              className="text-4xl md:text-5xl font-bold mb-4 text-white"
+              className="text-3xl md:text-4xl font-bold mb-2 text-white"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
@@ -574,7 +574,7 @@ const StudyRooms: React.FC = () => {
               <span className="text-blue-50">Study Space</span>
             </motion.h1>
             <motion.p 
-              className="text-lg text-gray-100 max-w-md mb-6"
+              className="text-base md:text-lg text-gray-100 max-w-md mb-4"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4, duration: 0.8 }}

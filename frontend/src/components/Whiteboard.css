@@ -3,50 +3,61 @@
   flex-direction: column;
   height: 100%;
   min-height: 100%;
-  background-color: #1a1a1a;
-  border-radius: 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
 }
 
 .whiteboard-toolbar {
   display: flex;
   align-items: center;
   gap: 15px;
-  padding: 8px 15px;
-  background-color: rgba(52, 9, 121, 0.2);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 20px;
+  background-color: rgba(255, 255, 255, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px 16px 0 0;
 }
 
 .tool-group {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 2px;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  padding: 4px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 4px rgba(31, 38, 135, 0.05);
 }
 
 .tool-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   background-color: transparent;
-  color: #fff;
+  color: #333;
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 16px;
 }
 
 .tool-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.7);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(31, 38, 135, 0.1);
 }
 
 .tool-btn.active {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(93, 63, 211, 0.1);
+  color: #5d3fd3;
+  border: 1px solid rgba(93, 63, 211, 0.3);
 }
 
 .action-btn,
@@ -55,60 +66,81 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 10px;
-  border: none;
-  border-radius: 4px;
-  background-color: transparent;
-  color: #fff;
+  padding: 8px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.5);
+  color: #333;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(31, 38, 135, 0.05);
 }
 
 .action-btn:hover,
 .clear-btn:hover,
 .export-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.7);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(31, 38, 135, 0.1);
 }
 
 .action-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .clear-btn {
-  color: #ff4444;
+  color: #992b2b;
+  border: 1px solid rgba(255, 77, 77, 0.3);
+}
+
+.clear-btn:hover {
+  background-color: rgba(255, 77, 77, 0.1);
 }
 
 .export-btn {
-  color: #44ff44;
+  color: #27ae60;
+  border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.export-btn:hover {
+  background-color: rgba(46, 204, 113, 0.1);
 }
 
 .whiteboard-toolbar input[type="color"] {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: none;
-  border-radius: 4px;
-  background: none;
+  width: 36px;
+  height: 36px;
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.5);
   cursor: pointer;
+  box-shadow: 0 2px 4px rgba(31, 38, 135, 0.05);
 }
 
 .whiteboard-toolbar input[type="range"] {
-  width: 80px;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 1.5px;
+  width: 100px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 3px;
   -webkit-appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 1px 3px rgba(31, 38, 135, 0.1);
 }
 
 .whiteboard-toolbar input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: #fff;
+  background: linear-gradient(135deg, #5d3fd3, #00a9ff);
   cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(31, 38, 135, 0.2);
 }
 
 .canvas-container {
@@ -117,6 +149,8 @@
   background-color: #fff;
   height: 100%;
   overflow: hidden;
+  box-shadow: inset 0 2px 8px rgba(31, 38, 135, 0.05);
+  border-radius: 0 0 16px 16px;
 }
 
 .whiteboard-canvas {
@@ -128,10 +162,11 @@
 
 .text-input {
   position: absolute;
-  padding: 4px 8px;
-  border: 1px solid #000;
-  border-radius: 4px;
+  padding: 8px 12px;
+  border: 1px solid rgba(93, 63, 211, 0.3);
+  border-radius: 8px;
   font-size: 16px;
-  background-color: #fff;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 8px rgba(31, 38, 135, 0.1);
   z-index: 1000;
 } 

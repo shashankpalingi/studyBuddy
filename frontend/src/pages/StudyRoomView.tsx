@@ -245,17 +245,18 @@ const StudyRoomView: React.FC = () => {
   
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
-      <div className="flex h-screen">
+      <div className="flex h-screen study-view-container">
         {/* Sidebar with minimize button */}
         <div className={`sidebar ${sidebarMinimized ? 'minimized' : ''}`}>
           <div className="sidebar-header">
-            <h2 className={sidebarMinimized ? 'hidden' : 'text-xl font-bold text-white mb-4'}>Study Tools</h2>
+            <h2 className={sidebarMinimized ? 'hidden' : 'text-xl font-bold mb-4'}>Study Tools</h2>
             <button className="minimize-btn" onClick={toggleSidebar}>
               {sidebarMinimized ? '→' : '←'}
             </button>
           </div>
 
           <div className="sidebar-nav">
+            {/* All sidebar buttons remain the same */}
             <button
               onClick={() => setActiveFeature('notes')}
               className={`sidebar-btn ${activeFeature === 'notes' ? 'active' : ''}`}
@@ -355,7 +356,7 @@ const StudyRoomView: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-y-auto h-full flex flex-col">
+        <div className="main-content-area">
           {renderFeatureContent()}
         </div>
       </div>

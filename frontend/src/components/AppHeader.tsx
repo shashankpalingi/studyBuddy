@@ -47,7 +47,7 @@ const AppHeader: React.FC = () => {
   return (
     <>
       {/* Top header for profile and notifications */}
-      <header className="fixed top-0 right-0 left-0 bg-white text-gray-900 h-16 flex items-center justify-between px-4 z-40 transition-[margin-left] duration-300 ease-in-out" style={{ marginLeft: `${isCollapsed ? '80px' : '256px'}` }}>
+      <header className="fixed top-0 right-0 left-0 backdrop-blur-md bg-white/70 border-b border-white/20 text-gray-900 h-16 flex items-center justify-between px-4 z-40 transition-[margin-left] duration-300 ease-in-out shadow-sm" style={{ marginLeft: `${isCollapsed ? '80px' : '256px'}` }}>
         <div className="flex items-center">
           <button 
             onClick={toggleSidebar} 
