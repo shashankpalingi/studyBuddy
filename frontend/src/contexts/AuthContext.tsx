@@ -319,14 +319,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   return (
     <AuthContext.Provider value={value}>
-      {!authInitialized ? (
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Initializing authentication...</p>
-        </div>
-      ) : (
-        children
-      )}
+      {children}
     </AuthContext.Provider>
   );
 };

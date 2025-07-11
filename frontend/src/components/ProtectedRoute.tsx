@@ -23,12 +23,7 @@ const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) =>
   }, [userProfile]);
   
   if (loading) {
-    // Show a loading spinner or skeleton while checking authentication
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
+    return null;
   }
 
   // For admin routes, check if user is an admin

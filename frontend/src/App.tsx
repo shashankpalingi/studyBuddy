@@ -11,66 +11,75 @@ import CreateRoom from './pages/CreateRoom';
 import StudyRoomView from './pages/StudyRoomView';
 import Admin from './pages/Admin';
 import './App.css';
+import { useState } from 'react';
+import Preloader from './components/ui/preloader';
 
 function App() {
-  return (
-    <SidebarProvider>
-      <div className="app-container">
-        <Toaster />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/study-rooms"
-            element={
-              <ProtectedRoute>
-                <StudyRooms />
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/create-room"
-            element={
-              <ProtectedRoute>
-                <CreateRoom />
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/study-room/:roomId"
-            element={
-              <ProtectedRoute>
-                <StudyRoomView />
-              </ProtectedRoute>
-            }
-          />
+  const [isLoading, setIsLoading] = useState(true);
 
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <Admin />
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route path="/not-found" element={<NotFound />} />
-          <Route path="*" element={<Navigate to="/not-found" replace />} />
-        </Routes>
+  return (
+    <>
+      <Preloader onLoadComplete={() => setIsLoading(false)} />
+      <div className={`${isLoading ? 'hidden' : ''}`}>
+        <SidebarProvider>
+          <div className="app-container">
+            <Toaster />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/study-rooms"
+                element={
+                  <ProtectedRoute>
+                    <StudyRooms />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/create-room"
+                element={
+                  <ProtectedRoute>
+                    <CreateRoom />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/study-room/:roomId"
+                element={
+                  <ProtectedRoute>
+                    <StudyRoomView />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute>
+                    <Admin />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route path="/not-found" element={<NotFound />} />
+              <Route path="*" element={<Navigate to="/not-found" replace />} />
+            </Routes>
+          </div>
+        </SidebarProvider>
       </div>
-    </SidebarProvider>
+    </>
   );
 }
 
