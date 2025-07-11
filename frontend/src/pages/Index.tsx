@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import Navigation from '../components/Navigation';
 import HeroSection from '../components/HeroSection';
-import ProgramsSection from '../components/ProgramsSection';
-import ImpactSection from '../components/ImpactSection';
 import FeaturesSection from '../components/FeaturesSection';
 import CTASection from '../components/CTASection';
+import ProgramsSection from '../components/ProgramsSection';
 
 const Index = () => {
   // Handle scrolling to sections based on URL hash
@@ -26,9 +25,13 @@ const Index = () => {
     <div className="w-full min-h-screen bg-gray-900 m-0 p-0 overflow-x-hidden">
       <Navigation />
       <HeroSection />
-      <ProgramsSection />
-      <ImpactSection />
-      <FeaturesSection />
+      <div className="relative bg-transparent">
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-900/50 via-gray-900 to-gray-900/50"></div>
+        <div className="relative">
+          <ProgramsSection />
+          <FeaturesSection />
+        </div>
+      </div>
       <CTASection />
     </div>
   );

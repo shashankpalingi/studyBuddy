@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { NavBar } from './ui/tubelight-navbar';
-import { Home, BookOpen, Users, LineChart, User } from 'lucide-react';
+import { Home, BookOpen, Users, User } from 'lucide-react';
 
 const Navigation = () => {
   const { currentUser } = useAuth();
@@ -38,12 +38,6 @@ const Navigation = () => {
       url: '/#programs', 
       icon: Users,
       onClick: () => handleSectionScroll('programs')
-    },
-    { 
-      name: 'Impact', 
-      url: '/#impact', 
-      icon: LineChart,
-      onClick: () => handleSectionScroll('impact')
     },
     { 
       name: 'Sign In', 

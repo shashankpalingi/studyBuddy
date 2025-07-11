@@ -3,7 +3,7 @@
     "@splinetool/react-spline": "^4.0.0",
     "embla-carousel-auto-scroll": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
-    "framer-motion": "^12.23.0",
+    "framer-motion": "^12.23.3",
     "lucide-react": "^0.525.0"
   }
 }

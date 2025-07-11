@@ -1,6 +1,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import './ProgramsSection.css';
+import { AnimatedBackground } from './ui/animated-background';
+import '../components/ui/animated-background.css';
 
 const ProgramsSection = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -89,8 +91,9 @@ const ProgramsSection = () => {
   }, [currentSlide]);
 
   return (
-    <section id="programs" ref={sectionRef} className="bg-gray-900 py-16 px-6">
-      <div className={`container mx-auto transition-all duration-1000 ${
+    <section id="programs" ref={sectionRef} className="relative bg-transparent pt-32 pb-32">
+      <AnimatedBackground isTop={true} />
+      <div className={`container mx-auto relative z-10 transition-all duration-1000 px-6 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
       }`}>
         <div className="mb-16 text-center relative">
@@ -100,7 +103,7 @@ const ProgramsSection = () => {
           <p className="text-2xl text-gray-300 mx-auto programs-description">
             Discover our specialized study programs designed to help you achieve excellence
           </p>
-          <div className="absolute -top-10 right-0 w-12 h-12 text-orange-400 animate-floating">
+          <div className="absolute -top-20 right-0 w-12 h-12 text-orange-400 animate-floating">
             <i className="ri-rocket-line text-5xl"></i>
           </div>
         </div>
