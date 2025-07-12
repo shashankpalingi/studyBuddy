@@ -143,8 +143,10 @@ const FeaturesSection = () => {
     <section 
       ref={sectionRef}
       id="features" 
-      className="relative bg-transparent -mt-32 overflow-hidden"
+      className="relative -mt-32 overflow-hidden"
     >
+      <div className="absolute inset-0 bg-black w-full h-full" />
+      <div className="absolute inset-0 w-full h-[150%] bg-black" />
       <AnimatedBackground isBottom={true} />
       <div className="relative z-10">
         <ContainerScroll

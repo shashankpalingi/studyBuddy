@@ -1,20 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useSidebar } from '../contexts/SidebarContext';
-import studybuddyLogo from '../pages/studybuddylogo.png';
 import { 
-  Home, 
-  Users, 
-  User, 
   LogOut, 
-  Menu, 
-  X, 
-  ChevronRight, 
-  Bell, 
-  Settings
+  Settings,
+  Search,
+  User
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -23,11 +16,29 @@ import {
   DropdownMenuTrigger 
 } from './ui/dropdown-menu';
 
-const AppHeader: React.FC = () => {
+interface AppHeaderProps {
+  searchTerm?: string;
+  setSearchTerm?: (term: string) => void;
+  handleSearch?: () => void;
+  joinCode?: string;
+  setJoinCode?: (code: string) => void;
+  handleJoinByCode?: () => void;
+  isJoining?: boolean;
+}
+
+const AppHeader: React.FC<AppHeaderProps> = ({
+  searchTerm = '',
+  setSearchTerm = () => {},
+  handleSearch = () => {},
+  joinCode = '',
+  setJoinCode = () => {},
+  handleJoinByCode = () => {},
+  isJoining = false
+}) => {
   const { currentUser, userProfile, logout } = useAuth();
-  const { isCollapsed, toggleSidebar } = useSidebar();
   const navigate = useNavigate();
-  const [showNotifications, setShowNotifications] = useState(false);
+  const location = useLocation();
+  const isStudyRoomsPage = location.pathname === '/study-rooms';
 
   const handleLogout = async () => {
     try {
@@ -38,176 +49,181 @@ const AppHeader: React.FC = () => {
     }
   };
 
-  const sidebarNavItems = [
-    { name: 'Home', url: '/', icon: Home },
-    { name: 'Study Rooms', url: '/study-rooms', icon: Users },
-    { name: 'Profile', url: '/profile', icon: User },
-  ];
-
   return (
-    <>
-      {/* Top header for profile and notifications */}
-      <header className="fixed top-0 right-0 left-0 backdrop-blur-md bg-white/70 border-b border-white/20 text-gray-900 h-16 flex items-center justify-between px-4 z-40 transition-[margin-left] duration-300 ease-in-out shadow-sm" style={{ marginLeft: `${isCollapsed ? '80px' : '256px'}` }}>
-        <div className="flex items-center">
-          <button 
-            onClick={toggleSidebar} 
-            className="mr-4 p-2 rounded-full hover:bg-gray-100 transition-colors lg:hidden"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          {/* Notifications button removed */}
-          
-          {/* User Profile Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <motion.button 
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
-              >
-                <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-blue-500">
-                  <img 
-                    src={userProfile?.photoURL || '/placeholder.svg'} 
-                    alt="Profile" 
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <span className="hidden md:inline text-sm font-medium text-gray-900">
-                  {userProfile?.displayName?.split(' ')[0] || 'User'}
-                </span>
-              </motion.button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-white border-gray-200 text-gray-900">
-              <div className="flex items-center p-2 border-b border-gray-200">
-                <div className="h-10 w-10 rounded-full overflow-hidden mr-2">
-                  <img 
-                    src={userProfile?.photoURL || '/placeholder.svg'} 
-                    alt="Profile" 
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">{userProfile?.displayName || 'User'}</p>
-                  <p className="text-xs text-gray-500">{currentUser?.email}</p>
-                </div>
-              </div>
-              <DropdownMenuItem 
-                className="hover:bg-gray-100" 
-                onClick={() => navigate('/profile')}
-              >
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="hover:bg-gray-100">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-gray-200" />
-              <DropdownMenuItem 
-                className="hover:bg-gray-100 text-red-600 hover:text-red-700" 
-                onClick={handleLogout}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </header>
+    <header className="fixed top-0 right-0 left-0 backdrop-blur-md bg-white/70 border-b border-white/20 text-gray-900 h-16 flex items-center justify-between px-6 z-40 shadow-sm">
+      {/* Logo */}
+      <div className="flex items-center">
+        <Link to="/" className="cursor-pointer">
+          <img 
+            src="/studybuddylogo.png" 
+            alt="StudyBuddy" 
+            className="h-8"
+          />
+        </Link>
+      </div>
 
-      {/* Sidebar */}
-      <AnimatePresence>
-        <motion.aside 
-          initial={{ width: isCollapsed ? 80 : 256, x: 0 }}
-          animate={{ 
-            width: isCollapsed ? 80 : 256,
-            x: 0,
-            transition: { duration: 0.3, ease: "easeInOut" }
-          }}
-          className="fixed left-0 top-0 h-full bg-white text-gray-900 flex flex-col shadow-lg z-50 overflow-hidden border-r border-gray-200"
-        >
-          <div className="flex items-center justify-between p-4 h-16 border-b border-gray-200">
-            <AnimatePresence mode="wait">
-              {!isCollapsed && (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex items-center"
-                >
-                  <Link to="/" className="cursor-pointer flex items-center">
-                    <img src={studybuddyLogo} alt="StudyBuddy Logo" className="h-8 mr-3" />
-                    {/* StudyBuddy text removed */}
-                  </Link>
-                </motion.div>
-              )}
-              {isCollapsed && (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Link to="/">
-                    <img src={studybuddyLogo} alt="StudyBuddy Logo" className="h-8" />
-                  </Link>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            
-            <motion.button 
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={toggleSidebar}
-              className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-            >
-              <ChevronRight className={`w-5 h-5 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
-            </motion.button>
+      {/* Search Bars - Only show on Study Rooms page */}
+      {isStudyRoomsPage && (
+        <div className="hidden md:flex flex-1 justify-center mx-6 space-x-4">
+          {/* Join by Code */}
+          <div className="w-2/5 max-w-xs">
+            <div className="flex">
+              <input
+                type="text"
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                placeholder="Enter room code"
+                className="flex-1 px-3 py-1 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+              />
+              <button
+                onClick={handleJoinByCode}
+                disabled={isJoining || !joinCode.trim()}
+                className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-r-lg text-sm hover:opacity-90 disabled:opacity-50"
+              >
+                {isJoining ? 'Joining...' : 'Join'}
+              </button>
+            </div>
           </div>
+          
+          {/* Search */}
+          <div className="w-2/5 max-w-xs">
+            <div className="flex">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by subject, name, or tag"
+                className="flex-1 px-3 py-1 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              />
+              <button
+                onClick={handleSearch}
+                className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-r-lg text-sm hover:opacity-90"
+              >
+                <Search className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-          <nav className="flex-grow p-3">
-            <ul className="space-y-1">
-              {sidebarNavItems.map((item) => (
-                <motion.li 
-                  key={item.name}
-                  whileHover={{ scale: 1.03, x: 3 }}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  <Link 
-                    to={item.url} 
-                    className={`flex items-center p-2 hover:bg-gray-100 rounded-lg transition-colors ${
-                      isCollapsed ? 'justify-center' : ''
-                    }`}
+      {/* Mobile Menu - Simplified */}
+      <div className="md:hidden">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="p-2 rounded-lg hover:bg-blue-50/50 transition-colors">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 bg-white/90 backdrop-blur-md border-gray-200 text-gray-900 shadow-lg rounded-lg mt-2">
+            {/* Mobile search fields - Only on Study Rooms page */}
+            {isStudyRoomsPage && (
+              <>
+                <div className="px-2 py-2">
+                  <input
+                    type="text"
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                    placeholder="Enter room code"
+                    className="w-full px-3 py-1 border border-gray-300 rounded-lg mb-2 text-sm"
+                  />
+                  <button
+                    onClick={handleJoinByCode}
+                    disabled={isJoining || !joinCode.trim()}
+                    className="w-full px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg text-sm mb-2"
                   >
-                    <item.icon className={`${isCollapsed ? '' : 'mr-3'} w-5 h-5`} />
-                    {!isCollapsed && <span>{item.name}</span>}
-                  </Link>
-                </motion.li>
-              ))}
-            </ul>
-          </nav>
+                    {isJoining ? 'Joining...' : 'Join by Code'}
+                  </button>
+                </div>
+                <div className="px-2 py-2 border-t border-gray-200">
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search rooms"
+                    className="w-full px-3 py-1 border border-gray-300 rounded-lg mb-2 text-sm"
+                  />
+                  <button
+                    onClick={handleSearch}
+                    className="w-full px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg text-sm flex items-center justify-center gap-2"
+                  >
+                    <Search className="w-4 h-4" /> Search
+                  </button>
+                </div>
+                <DropdownMenuSeparator className="bg-gray-200/50" />
+              </>
+            )}
+            <DropdownMenuItem
+              className="hover:bg-blue-50/50"
+              onClick={() => navigate('/profile')}
+            >
+              <User className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
-          {/* Profile section is only in sidebar when not collapsed */}
-          {currentUser && !isCollapsed && (
-            <div className="mt-auto p-3">
-              <div className="border-t border-gray-200 pt-3">
-                <button 
-                  onClick={handleLogout}
-                  className="w-full flex items-center p-2 hover:bg-gray-100 rounded-lg transition-colors text-left text-sm text-gray-600 hover:text-gray-900"
-                >
-                  <LogOut className="mr-3 w-5 h-5" />
-                  Log Out
-                </button>
+      {/* User Profile - Unchanged */}
+      <div className="flex items-center">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center space-x-2 p-1 rounded-full hover:bg-white/50 transition-colors"
+            >
+              <div className="h-8 w-8 rounded-full overflow-hidden border-2 border-blue-500">
+                <img 
+                  src={userProfile?.photoURL || '/placeholder.svg'} 
+                  alt="Profile" 
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <span className="hidden md:inline text-sm font-medium text-gray-900">
+                {userProfile?.displayName?.split(' ')[0] || 'User'}
+              </span>
+            </motion.button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 bg-white/90 backdrop-blur-md border-gray-200 text-gray-900 shadow-lg rounded-lg">
+            <div className="flex items-center p-2 border-b border-gray-200/50">
+              <div className="h-10 w-10 rounded-full overflow-hidden mr-2">
+                <img 
+                  src={userProfile?.photoURL || '/placeholder.svg'} 
+                  alt="Profile" 
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">{userProfile?.displayName || 'User'}</p>
+                <p className="text-xs text-gray-500">{currentUser?.email}</p>
               </div>
             </div>
-          )}
-        </motion.aside>
-      </AnimatePresence>
-    </>
+            <DropdownMenuItem 
+              className="hover:bg-blue-50/50" 
+              onClick={() => navigate('/profile')}
+            >
+              <User className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="hover:bg-blue-50/50">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-gray-200/50" />
+            <DropdownMenuItem 
+              className="hover:bg-red-50/50 text-red-600 hover:text-red-700" 
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </header>
   );
 };
 

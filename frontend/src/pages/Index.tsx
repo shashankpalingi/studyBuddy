@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import Navigation from '../components/Navigation';
 import HeroSection from '../components/HeroSection';
 import FeaturesSection from '../components/FeaturesSection';
-import CTASection from '../components/CTASection';
 import ProgramsSection from '../components/ProgramsSection';
+import Footer from '../components/Footer';
 
 const Index = () => {
   // Handle scrolling to sections based on URL hash
@@ -32,7 +32,7 @@ const Index = () => {
           <FeaturesSection />
         </div>
       </div>
-      <CTASection />
+      <Footer />
     </div>
   );
 };

@@ -25,10 +25,6 @@ const CTASection = () => {
 
   return (
     <section id="cta" ref={sectionRef} className="bg-gray-900 py-20 px-6 relative">
-      <div className="absolute inset-0 opacity-20" style={{
-        backgroundImage: "url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBzdHJva2U9IiM2MzY2RjEiIHN0cm9rZS13aWR0aD0iMiIgZD0iTTAgMGg0MHY0MEgweiIvPjwvZz48L3N2Zz4=')",
-        backgroundSize: '40px 40px'
-      }}></div>
       
       <div className={`container mx-auto relative z-10 transition-all duration-1000 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'

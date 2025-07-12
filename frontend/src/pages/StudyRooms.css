@@ -1,14 +1,85 @@
 .study-rooms-container {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
   min-height: 100vh;
-  background-color: #1a1a1a;
-  color: white;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4ecfb 50%, #eee1fd 100%);
+  background-attachment: fixed;
+  position: relative;
+  color: #333;
+  max-width: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 80px 0 40px; /* Increased top padding */
+}
+
+.study-rooms-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 15% 50%, rgba(93, 63, 211, 0.1) 0%, transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(0, 169, 255, 0.1) 0%, transparent 30%),
+    radial-gradient(circle at 50% 80%, rgba(46, 204, 113, 0.05) 0%, transparent 20%);
+  z-index: 0;
 }
 
 .study-rooms-content {
-  margin-top: 2rem;
+  margin-top: 1rem; /* Reduced top margin since we moved search bars to header */
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 20px;
+}
+
+/* Hero section styles */
+.study-hero {
+  --base: 240;
+  --spread: 100;
+  --radius: 14;
+  --border: 2;
+  --backdrop: hsl(240 50% 20% / 0.4);
+  --backup-border: hsl(240 50% 40% / 0.2);
+  --size: 300;
+  --outer: 1;
+  --border-size: calc(var(--border) * 1px);
+  --spotlight-size: calc(var(--size) * 1px);
+  --hue: calc(var(--base) + (var(--xp, 0) * var(--spread, 0)));
+  
+  background-image: radial-gradient(
+    var(--spotlight-size) var(--spotlight-size) at
+    calc(var(--x, 0) * 1px)
+    calc(var(--y, 0) * 1px),
+    hsl(var(--hue, 240) calc(var(--saturation, 100) * 1%) calc(var(--lightness, 70) * 1%) / var(--bg-spot-opacity, 0.2)),
+    transparent
+  );
+  background-color: var(--backdrop);
+  background-size: calc(100% + (2 * var(--border-size))) calc(100% + (2 * var(--border-size)));
+  background-position: 50% 50%;
+  background-attachment: fixed;
+  border: var(--border-size) solid var(--backup-border);
+  position: relative;
+  touch-action: none;
+  
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  box-shadow: 0 1rem 2rem -1rem rgba(0, 0, 0, 0.4);
+}
+
+.study-hero h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.study-hero p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
 }
 
 .study-rooms-header {
@@ -36,23 +107,92 @@
   border-radius: 8px;
   font-weight: 600;
   transition: all 0.2s;
-  background-color: #2563eb;
-  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: white;
+  color: #4776e6;
   border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.create-room-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.create-room-btn svg {
+  width: 20px;
+  height: 20px;
 }
 
 .create-test-room-btn {
-  background-color: #059669;
-  color: white;
+  background-color: rgba(5, 150, 105, 0.1);
+  color: #059669;
+  border: 1px solid rgba(5, 150, 105, 0.3);
+}
+
+.create-test-room-btn:hover {
+  background-color: rgba(5, 150, 105, 0.2);
 }
 
 .error-message {
-  background-color: rgba(255, 77, 77, 0.2);
-  color: #ff4d4d;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
+  background-color: rgba(255, 77, 77, 0.15);
+  color: #992b2b;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 20px;
   text-align: center;
+  border: 1px solid rgba(255, 77, 77, 0.3);
+  box-shadow: 0 4px 6px rgba(255, 77, 77, 0.05);
+}
+
+/* Search and join options */
+.options-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+@media (max-width: 768px) {
+  .options-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.option-card {
+  --base: 210;
+  --spread: 150;
+  --radius: 14;
+  --border: 2;
+  --backdrop: hsl(0 0% 100% / 0.8);
+  --backup-border: hsl(0 0% 100% / 0.1);
+  --size: 200;
+  --outer: 1;
+  --border-size: calc(var(--border) * 1px);
+  --spotlight-size: calc(var(--size) * 1px);
+  --hue: calc(var(--base) + (var(--xp, 0) * var(--spread, 0)));
+  
+  background-image: radial-gradient(
+    var(--spotlight-size) var(--spotlight-size) at
+    calc(var(--x, 0) * 1px)
+    calc(var(--y, 0) * 1px),
+    hsl(var(--hue, 210) calc(var(--saturation, 100) * 1%) calc(var(--lightness, 70) * 1%) / var(--bg-spot-opacity, 0.1)),
+    transparent
+  );
+  background-color: var(--backdrop);
+  background-size: calc(100% + (2 * var(--border-size))) calc(100% + (2 * var(--border-size)));
+  background-position: 50% 50%;
+  background-attachment: fixed;
+  border: var(--border-size) solid var(--backup-border);
+  position: relative;
+  touch-action: none;
+  
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 1rem 2rem -1rem rgba(0, 0, 0, 0.3);
 }
 
 .join-options {
@@ -72,44 +212,79 @@
 .search-rooms input {
   flex: 1;
   padding: 0.75rem;
-  border: 1px solid #333;
+  border: 1px solid rgba(51, 51, 51, 0.1);
   border-radius: 8px;
   font-size: 0.875rem;
-  background-color: #2a2a2a;
-  color: white;
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #333;
+  box-shadow: 0 2px 5px rgba(31, 38, 135, 0.07);
+}
+
+.join-by-code input:focus,
+.search-rooms input:focus {
+  outline: none;
+  border-color: rgba(37, 99, 235, 0.5);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
 }
 
 .join-by-code button,
 .search-rooms button {
   padding: 0.75rem 1.5rem;
-  background-color: #2563eb;
-  color: white;
-  border: none;
+  background-color: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.3);
   border-radius: 8px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(37, 99, 235, 0.1);
 }
 
+.join-by-code button:hover,
+.search-rooms button:hover {
+  background-color: rgba(37, 99, 235, 0.2);
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.15);
+  transform: translateY(-1px);
+}
+
+/* Room tabs - added more top margin since we removed search bars */
 .rooms-tabs {
   display: flex;
   gap: 1rem;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid #333;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   padding-bottom: 0.5rem;
+  margin-top: 1rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 .tab-btn {
   padding: 0.5rem 1rem;
   border-radius: 6px;
   font-weight: 500;
-  color: #999;
+  color: #666;
   transition: all 0.2s;
   background: transparent;
   border: none;
+  position: relative;
 }
 
 .tab-btn.active {
-  background-color: #2563eb;
-  color: white;
+  background-color: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+
+.tab-btn.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -0.5rem;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(52,9,121,1) 0%, rgba(0,212,255,1) 100%);
+  border-radius: 2px;
 }
 
 .rooms-list {
@@ -138,87 +313,142 @@
 }
 
 .study-room-card {
-  border: 1px solid #333;
-  border-radius: 12px;
+  --base: 210;
+  --spread: 150;
+  --radius: 14;
+  --border: 2;
+  --backdrop: hsl(0 0% 100% / 0.9);
+  --backup-border: hsl(var(--base) 50% 50% / 0.1);
+  --size: 200;
+  --outer: 1;
+  --border-size: calc(var(--border) * 1px);
+  --spotlight-size: calc(var(--size) * 1px);
+  --hue: calc(var(--base) + (var(--xp, 0) * var(--spread, 0)));
+  
+  background-image: radial-gradient(
+    var(--spotlight-size) var(--spotlight-size) at
+    calc(var(--x, 0) * 1px)
+    calc(var(--y, 0) * 1px),
+    hsl(var(--hue, 210) 80% 70% / var(--bg-spot-opacity, 0.15)),
+    transparent
+  );
+  background-color: var(--backdrop);
+  background-size: calc(100% + (2 * var(--border-size))) calc(100% + (2 * var(--border-size)));
+  background-position: 50% 50%;
+  background-attachment: fixed;
+  border: var(--border-size) solid var(--backup-border);
+  position: relative;
+  touch-action: none;
+  
+  border-radius: 16px;
   padding: 1.5rem;
-  background-color: #212121;
-  transition: all 0.2s;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  box-shadow: 
+    0 1rem 2rem -1rem rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 .study-room-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 1.5rem 3rem -1rem rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  --bg-spot-opacity: 0.2;
 }
 
 .room-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 0.75rem;
 }
 
 .room-header h3 {
   font-size: 1.25rem;
-  font-weight: 600;
-  color: white;
+  font-weight: 700;
+  color: #1F2937;
   margin: 0;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--base) 70% 20%) 0%,
+    hsl(calc(var(--base) + 60) 80% 40%) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .private-badge {
-  background-color: rgba(255, 77, 77, 0.2);
-  color: #ff4d4d;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--base) 70% 90% / 0.2) 0%,
+    hsl(calc(var(--base) + 60) 80% 90% / 0.2) 100%
+  );
+  color: hsl(var(--base) 70% 40%);
   padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid hsl(var(--base) 70% 90% / 0.2);
 }
 
 .room-subject {
-  color: #2563eb;
-  font-size: 0.875rem;
-  margin: 0;
+  color: hsl(var(--base) 30% 30%);
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
 }
 
 .room-description {
-  color: #999;
+  color: hsl(var(--base) 30% 40%);
   font-size: 0.875rem;
-  margin: 0;
+  margin-bottom: 1rem;
   line-height: 1.5;
+  font-weight: 500;
 }
 
 .room-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  margin-top: 1rem;
+  border-top: 1px solid hsl(var(--base) 30% 90% / 0.2);
+  padding-top: 1rem;
 }
 
 .room-info {
   display: flex;
   gap: 1rem;
-  color: #999;
-  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
 }
 
 .detail {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.375rem;
+  color: hsl(var(--base) 30% 40%);
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .room-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 .room-tag {
-  background-color: rgba(37, 99, 235, 0.2);
-  color: #2563eb;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--base) 70% 90% / 0.2) 0%,
+    hsl(calc(var(--base) + 60) 80% 90% / 0.2) 100%
+  );
+  color: hsl(var(--base) 70% 40%);
   padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
+  border-radius: 1rem;
   font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid hsl(var(--base) 70% 90% / 0.2);
 }
 
 .room-actions {
@@ -227,42 +457,44 @@
 
 .action-btn {
   width: 100%;
-  padding: 0.75rem;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.2s;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
   border: none;
-}
-
-.enter-btn {
-  background-color: #2563eb;
+  cursor: pointer;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--base) 70% 50%) 0%,
+    hsl(calc(var(--base) + 60) 80% 60%) 100%
+  );
   color: white;
+  box-shadow: 0 4px 12px hsl(var(--base) 70% 40% / 0.3);
 }
 
-.join-btn {
-  background-color: #059669;
-  color: white;
+.action-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px hsl(var(--base) 70% 40% / 0.4);
 }
 
-.join-btn:disabled {
-  background-color: #4b5563;
+.action-btn:disabled {
+  opacity: 0.7;
   cursor: not-allowed;
-}
+  background: hsl(var(--base) 10% 80%);
+} 
 
-.loading-state,
-.error-state,
-.empty-state {
+.loading-state {
   text-align: center;
-  padding: 3rem;
-  color: #999;
+  padding: 2rem;
+  color: #6B7280;
 }
 
 .spinner {
-  border: 4px solid #333;
-  border-top: 4px solid #2563eb;
+  border: 3px solid #E5E7EB;
+  border-top: 3px solid #3B82F6;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 24px;
+  height: 24px;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
 }
@@ -272,16 +504,36 @@
   100% { transform: rotate(360deg); }
 }
 
+/* Add these new classes for scrollbar styling to match StudyRoomView.css */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 123, 255, 0.2);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 123, 255, 0.4);
+}
+
 button {
-  border: none;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 button:hover:not(:disabled) {
-  opacity: 0.9;
+  transform: translateY(-2px);
 }
 
 button:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
-  opacity: 0.7;
 } 

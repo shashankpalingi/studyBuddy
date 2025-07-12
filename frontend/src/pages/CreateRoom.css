@@ -1,1 +1,97 @@
-/* Remove all styles as we're using Tailwind classes directly */ 
+/* Styles for the create room component */
+.create-room-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4ecfb 50%, #eee1fd 100%);
+  background-attachment: fixed;
+  position: relative;
+  color: #333;
+}
+
+.create-room-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 15% 50%, rgba(93, 63, 211, 0.1) 0%, transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(0, 169, 255, 0.1) 0%, transparent 30%),
+    radial-gradient(circle at 50% 80%, rgba(46, 204, 113, 0.05) 0%, transparent 20%);
+  z-index: 0;
+}
+
+.create-room-form {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1) !important;
+  border-radius: 16px !important;
+  transition: all 0.3s ease;
+}
+
+.create-room-form:hover {
+  box-shadow: 0 12px 36px rgba(31, 38, 135, 0.15) !important;
+}
+
+.form-input {
+  background: rgba(255, 255, 255, 0.7) !important;
+  border: 1px solid rgba(51, 51, 51, 0.1) !important;
+  color: #333 !important;
+}
+
+.form-input:focus {
+  border-color: rgba(37, 99, 235, 0.5) !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25) !important;
+}
+
+.form-label {
+  color: #333 !important;
+}
+
+.create-room-btn {
+  background: rgba(37, 99, 235, 0.1) !important;
+  color: #2563eb !important;
+  border: 1px solid rgba(37, 99, 235, 0.3) !important;
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.05) !important;
+  transition: all 0.3s ease !important;
+}
+
+.create-room-btn:hover {
+  background: rgba(37, 99, 235, 0.2) !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1) !important;
+  transform: translateY(-2px) !important;
+}
+
+.cancel-btn {
+  background: rgba(255, 77, 77, 0.1) !important;
+  color: #ff4d4d !important;
+  border: 1px solid rgba(255, 77, 77, 0.3) !important;
+  box-shadow: 0 4px 6px rgba(255, 77, 77, 0.05) !important;
+}
+
+.cancel-btn:hover {
+  background: rgba(255, 77, 77, 0.2) !important;
+  box-shadow: 0 4px 12px rgba(255, 77, 77, 0.1) !important;
+  transform: translateY(-2px) !important;
+}
+
+.error-message {
+  background-color: rgba(255, 77, 77, 0.15) !important;
+  color: #992b2b !important;
+  border: 1px solid rgba(255, 77, 77, 0.3) !important;
+  box-shadow: 0 4px 6px rgba(255, 77, 77, 0.05) !important;
+}
+
+.tag-container {
+  background: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid rgba(51, 51, 51, 0.1) !important;
+  border-radius: 8px !important;
+}
+
+.tag {
+  background: rgba(37, 99, 235, 0.1) !important;
+  color: #2563eb !important;
+  border: 1px solid rgba(37, 99, 235, 0.2) !important;
+} 

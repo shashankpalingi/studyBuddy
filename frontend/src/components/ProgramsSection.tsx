@@ -91,7 +91,7 @@ const ProgramsSection = () => {
   }, [currentSlide]);
 
   return (
-    <section id="programs" ref={sectionRef} className="relative bg-transparent pt-32 pb-32">
+    <section id="programs" ref={sectionRef} className="relative bg-black pt-32 pb-32">
       <AnimatedBackground isTop={true} />
       <div className={`container mx-auto relative z-10 transition-all duration-1000 px-6 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'

@@ -97,171 +97,178 @@ const Profile: React.FC = () => {
   
   if (!currentUser || !userProfile) {
     return (
-      <div className="profile-container">
-        <p>Loading profile...</p>
+      <div className="min-h-screen">
+        <div className="profile-container">
+          <div className="spinner"></div>
+          <p>Loading profile...</p>
+        </div>
       </div>
     );
   }
   
   return (
-    <div className="profile-container">
-      <div className="profile-header">
-        <h1>Your Profile</h1>
-        <div className="profile-actions">
-          {!isEditing && (
+    <div className="min-h-screen">
+      <div className="profile-container">
+        <div className="profile-header">
+          <h1>Your Profile</h1>
+          <div className="profile-actions">
+            {!isEditing && (
+              <button 
+                className="edit-btn"
+                onClick={() => setIsEditing(true)}
+              >
+                Edit Profile
+              </button>
+            )}
             <button 
-              className="edit-btn"
-              onClick={() => setIsEditing(true)}
+              className="logout-btn"
+              onClick={handleLogout}
             >
-              Edit Profile
+              Log Out
             </button>
-          )}
-          <button 
-            className="logout-btn"
-            onClick={handleLogout}
-          >
-            Log Out
-          </button>
+          </div>
         </div>
-      </div>
-      
-      {error && <div className="error-message">{error}</div>}
-      {success && <div className="success-message">{success}</div>}
-      
-      {isEditing ? (
-        <form className="profile-form" onSubmit={handleSubmit}>
-          <div className="profile-image-container">
-            <div className="profile-image-wrapper">
+        
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
+        
+        {isEditing ? (
+          <form className="profile-form" onSubmit={handleSubmit}>
+            <div className="profile-image-container">
+              <div className="profile-image-wrapper">
+                <img 
+                  src={imagePreview || userProfile.photoURL || '/placeholder.svg'} 
+                  alt="Profile" 
+                  className="profile-image"
+                />
+                <label className="change-photo-btn">
+                  Change Photo
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleImageChange}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              </div>
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="displayName">Display Name</label>
+              <input
+                id="displayName"
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="bio">Bio</label>
+              <textarea
+                id="bio"
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                rows={4}
+                placeholder="Tell us about yourself..."
+              />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="major">Major/Field of Study</label>
+              <input
+                id="major"
+                type="text"
+                value={major}
+                onChange={(e) => setMajor(e.target.value)}
+                placeholder="e.g. Computer Science"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="interests">Interests (comma separated)</label>
+              <input
+                id="interests"
+                type="text"
+                value={interests}
+                onChange={(e) => setInterests(e.target.value)}
+                placeholder="e.g. AI, Web Development, Math"
+              />
+            </div>
+            
+            <div className="form-actions">
+              <button 
+                type="button" 
+                className="cancel-btn"
+                onClick={() => {
+                  setIsEditing(false);
+                  // Reset form
+                  if (userProfile) {
+                    setDisplayName(userProfile.displayName || '');
+                    setBio(userProfile.bio || '');
+                    setMajor(userProfile.major || '');
+                    setInterests(userProfile.interests?.join(', ') || '');
+                  }
+                  setImagePreview(null);
+                  setProfileImage(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                className="save-btn"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="profile-view">
+            <div className="profile-image-container">
               <img 
-                src={imagePreview || userProfile.photoURL || '/placeholder.svg'} 
+                src={userProfile.photoURL || '/placeholder.svg'} 
                 alt="Profile" 
                 className="profile-image"
               />
-              <label className="change-photo-btn">
-                Change Photo
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleImageChange}
-                  style={{ display: 'none' }}
-                />
-              </label>
+            </div>
+            
+            <div className="profile-details">
+              <h2>{userProfile.displayName || 'Anonymous User'}</h2>
+              <p className="profile-email">{userProfile.email}</p>
+              
+              {userProfile.bio && (
+                <div className="profile-section">
+                  <h3>Bio</h3>
+                  <p>{userProfile.bio}</p>
+                </div>
+              )}
+              
+              {userProfile.major && (
+                <div className="profile-section">
+                  <h3>Major/Field of Study</h3>
+                  <p>{userProfile.major}</p>
+                </div>
+              )}
+              
+              {userProfile.interests && userProfile.interests.length > 0 && (
+                <div className="profile-section">
+                  <h3>Interests</h3>
+                  <div className="interests-list">
+                    {userProfile.interests.map((interest, index) => (
+                      <span key={index} className="interest-tag">
+                        {interest}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-          
-          <div className="form-group">
-            <label htmlFor="displayName">Display Name</label>
-            <input
-              id="displayName"
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              required
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="bio">Bio</label>
-            <textarea
-              id="bio"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              rows={4}
-              placeholder="Tell us about yourself..."
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="major">Major/Field of Study</label>
-            <input
-              id="major"
-              type="text"
-              value={major}
-              onChange={(e) => setMajor(e.target.value)}
-              placeholder="e.g. Computer Science"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="interests">Interests (comma separated)</label>
-            <input
-              id="interests"
-              type="text"
-              value={interests}
-              onChange={(e) => setInterests(e.target.value)}
-              placeholder="e.g. AI, Web Development, Math"
-            />
-          </div>
-          
-          <div className="form-actions">
-            <button 
-              type="button" 
-              className="cancel-btn"
-              onClick={() => {
-                setIsEditing(false);
-                // Reset form
-                if (userProfile) {
-                  setDisplayName(userProfile.displayName || '');
-                  setBio(userProfile.bio || '');
-                  setMajor(userProfile.major || '');
-                  setInterests(userProfile.interests?.join(', ') || '');
-                }
-                setImagePreview(null);
-                setProfileImage(null);
-              }}
-            >
-              Cancel
-            </button>
-            <button 
-              type="submit" 
-              className="save-btn"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
-        </form>
-      ) : (
-        <div className="profile-view">
-          <div className="profile-image-container">
-            <img 
-              src={userProfile.photoURL || '/placeholder.svg'} 
-              alt="Profile" 
-              className="profile-image"
-            />
-          </div>
-          
-          <div className="profile-details">
-            <h2>{userProfile.displayName || 'Anonymous User'}</h2>
-            <p className="profile-email">{userProfile.email}</p>
-            
-            {userProfile.bio && (
-              <div className="profile-section">
-                <h3>Bio</h3>
-                <p>{userProfile.bio}</p>
-              </div>
-            )}
-            
-            {userProfile.major && (
-              <div className="profile-section">
-                <h3>Major/Field of Study</h3>
-                <p>{userProfile.major}</p>
-              </div>
-            )}
-            
-            {userProfile.interests && userProfile.interests.length > 0 && (
-              <div className="profile-section">
-                <h3>Interests</h3>
-                <div className="interests-list">
-                  {userProfile.interests.map((interest, index) => (
-                    <span key={index} className="interest-tag">{interest}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

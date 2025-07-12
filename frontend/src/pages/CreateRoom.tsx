@@ -106,20 +106,20 @@ const CreateRoom: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div className="min-h-screen create-room-container">
       <AppHeader />
       
-      <main className="transition-[margin] duration-300 ease-in-out pt-24 px-4 md:px-8 pb-8" style={{ marginLeft: `${isCollapsed ? '80px' : '256px'}` }}>
-        <div className="max-w-4xl mx-auto">
+      <main className="pt-24 px-4 md:px-8 pb-8">
+        <div className="max-w-4xl mx-auto relative z-10">
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             className="flex justify-between items-center mb-8"
           >
-            <h1 className="text-3xl font-bold text-gray-900">Create a Study Room</h1>
+            <h1 className="text-3xl font-bold glass-title">Create a Study Room</h1>
             <button 
-              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-300"
+              className="px-4 py-2 rounded-lg transition-colors duration-300 cancel-btn"
               onClick={() => navigate('/study-rooms')}
             >
               Cancel
@@ -130,7 +130,7 @@ const CreateRoom: React.FC = () => {
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="bg-red-100 text-red-600 p-4 rounded-lg mb-4"
+              className="p-4 rounded-lg mb-4 error-message"
             >
               {error}
             </motion.div>
@@ -140,12 +140,12 @@ const CreateRoom: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="bg-white p-8 rounded-lg shadow-lg border border-gray-200" 
+            className="p-8 rounded-lg shadow-lg create-room-form" 
             onSubmit={handleSubmit}
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="form-group">
-                <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-800">Room Name*</label>
+                <label htmlFor="name" className="block mb-2 text-sm font-medium form-label">Room Name*</label>
                 <input
                   id="name"
                   type="text"
@@ -153,13 +153,12 @@ const CreateRoom: React.FC = () => {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Calculus Study Group"
                   required
-                  className="w-full bg-white text-black px-4 py-3 rounded-lg border-2 border-gray-400 shadow-sm hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-700 text-base font-sans"
-                  style={{ color: 'black' }}
+                  className="w-full px-4 py-3 rounded-lg border-2 shadow-sm hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-700 text-base font-sans form-input"
                 />
               </div>
               
               <div className="form-group">
-                <label htmlFor="subject" className="block mb-2 text-sm font-medium text-gray-800">Subject*</label>
+                <label htmlFor="subject" className="block mb-2 text-sm font-medium form-label">Subject*</label>
                 <input
                   id="subject"
                   type="text"
@@ -167,28 +166,26 @@ const CreateRoom: React.FC = () => {
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="e.g. Mathematics, Computer Science"
                   required
-                  className="w-full bg-white text-black px-4 py-3 rounded-lg border-2 border-gray-400 shadow-sm hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-700 text-base font-sans"
-                  style={{ color: 'black' }}
+                  className="w-full px-4 py-3 rounded-lg border-2 shadow-sm hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-700 text-base font-sans form-input"
                 />
               </div>
             </div>
             
             <div className="form-group mt-4">
-              <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-800">Description</label>
+              <label htmlFor="description" className="block mb-2 text-sm font-medium form-label">Description</label>
               <textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Describe what you'll be studying in this room..."
                 rows={4}
-                className="w-full bg-white text-black px-4 py-3 rounded-lg border-2 border-gray-400 shadow-sm hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-700 text-base font-sans"
-                style={{ color: 'black' }}
+                className="w-full px-4 py-3 rounded-lg border-2 shadow-sm hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-700 text-base font-sans form-input"
               />
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
               <div className="form-group">
-                <label htmlFor="maxParticipants" className="block mb-2 text-sm font-medium text-gray-800">Maximum Participants</label>
+                <label htmlFor="maxParticipants" className="block mb-2 text-sm font-medium form-label">Maximum Participants</label>
                 <input
                   id="maxParticipants"
                   type="number"
@@ -196,101 +193,100 @@ const CreateRoom: React.FC = () => {
                   max={50}
                   value={maxParticipants}
                   onChange={(e) => setMaxParticipants(parseInt(e.target.value))}
-                  className="w-full bg-white text-black px-4 py-3 rounded-lg border-2 border-gray-400 shadow-sm hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-700 text-base font-sans"
-                  style={{ color: 'black' }}
+                  className="w-full px-4 py-3 rounded-lg border-2 shadow-sm hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-700 text-base font-sans form-input"
                 />
               </div>
               
-              <div className="form-group flex items-center justify-center">
-                <label className="flex items-center space-x-2 cursor-pointer">
+              <div className="form-group">
+                <label htmlFor="isPrivate" className="block mb-2 text-sm font-medium form-label">Privacy</label>
+                <div className="flex items-center mt-1">
+                  <label className="inline-flex items-center">
                   <input
                     type="checkbox"
                     checked={isPrivate}
-                    onChange={(e) => setIsPrivate(e.target.checked)}
-                    className="form-checkbox h-5 w-5 text-blue-600 bg-white border-2 border-gray-300 rounded focus:ring-blue-500"
+                      onChange={() => setIsPrivate(!isPrivate)}
+                      className="form-checkbox h-5 w-5 text-blue-500 rounded border-gray-300 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-gray-800 font-medium">Private Room</span>
+                    <span className="ml-2 text-gray-700">Private Room</span>
                 </label>
+                  {isPrivate && (
+                    <button
+                      type="button"
+                      onClick={generateJoinCode}
+                      className="ml-4 px-2 py-1 rounded text-xs create-room-btn"
+                    >
+                      Generate New Code
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
             
             {isPrivate && (
               <div className="form-group mt-4">
-                <label htmlFor="joinCode" className="block mb-2 text-sm font-medium text-gray-800">Join Code*</label>
-                <div className="flex space-x-2">
+                <label htmlFor="joinCode" className="block mb-2 text-sm font-medium form-label">Join Code</label>
+                <div className="flex">
                   <input
                     id="joinCode"
                     type="text"
                     value={joinCode}
                     onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                     placeholder="e.g. ABC123"
-                    maxLength={10}
-                    required={isPrivate}
-                    className="flex-grow bg-white text-black px-4 py-3 rounded-lg border-2 border-gray-400 shadow-sm hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-700 text-base font-sans"
-                    style={{ color: 'black' }}
+                    className="w-full px-4 py-3 rounded-lg border-2 shadow-sm hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-700 text-base font-sans font-mono form-input"
+                    style={{ letterSpacing: '0.2em' }}
                   />
-                  <button 
-                    type="button" 
-                    className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-300 font-medium"
-                    onClick={generateJoinCode}
-                  >
-                    Generate
-                  </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Share this code with those you want to invite</p>
               </div>
             )}
             
             <div className="form-group mt-4">
-              <label htmlFor="tags" className="block mb-2 text-sm font-medium text-gray-800">Tags</label>
-              <div className="flex space-x-2 mb-4">
+              <label htmlFor="tags" className="block mb-2 text-sm font-medium form-label">Tags</label>
+              <div className="flex">
                 <input
                   id="tags"
                   type="text"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
-                  placeholder="e.g. Calculus, Homework, Exam Prep"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddTag();
-                    }
-                  }}
-                  className="flex-grow bg-white text-black px-4 py-3 rounded-lg border-2 border-gray-400 shadow-sm hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-700 text-base font-sans"
-                  style={{ color: 'black' }}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                  placeholder="Add tags e.g. 'physics', 'homework'"
+                  className="w-full px-4 py-3 rounded-lg border-2 shadow-sm hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-700 text-base font-sans form-input"
                 />
                 <button 
                   type="button" 
-                  className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors duration-300 font-medium"
                   onClick={handleAddTag}
+                  className="ml-2 px-4 py-3 rounded create-room-btn"
                 >
                   Add
                 </button>
               </div>
               
+              {tags.length > 0 && (
+                <div className="mt-2 p-2 rounded tag-container">
               <div className="flex flex-wrap gap-2">
                 {tags.map((tag, index) => (
-                  <div key={index} className="bg-gray-100 text-gray-800 text-sm px-3 py-1.5 rounded-full flex items-center space-x-2 border border-gray-200">
-                    <span>{tag}</span>
+                      <div key={index} className="flex items-center px-3 py-1 rounded-full tag">
+                        <span className="text-sm">{tag}</span>
                     <button 
                       type="button" 
-                      className="text-gray-500 hover:text-red-500"
                       onClick={() => handleRemoveTag(tag)}
+                          className="ml-2 text-sm font-bold"
                     >
-                      ×
+                          &times;
                     </button>
                   </div>
                 ))}
               </div>
+                </div>
+              )}
             </div>
             
-            <div className="mt-6">
+            <div className="form-group mt-6 flex justify-end">
               <button 
                 type="submit" 
                 disabled={isLoading}
-                className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition-colors duration-300 disabled:opacity-50 font-medium text-base"
+                className="px-6 py-3 rounded-lg text-base font-medium create-room-btn"
               >
-                {isLoading ? 'Creating Room...' : 'Create Study Room'}
+                {isLoading ? 'Creating...' : 'Create Room'}
               </button>
             </div>
           </motion.form>
