@@ -28,16 +28,16 @@ const Footer = () => {
         <div 
           className="absolute" 
           style={{ 
-            left: "300px", 
-            top: "50px",
+            left: "200px", 
+            top: "80px",
             textAlign: "center",
             width: "400px"
           }}
         >
           <h2 
-            className="text-4xl text-white tracking-wider mb-6" 
+            className="text-2xl text-white tracking-wider mb-6" 
             style={{ 
-              color:"violet",
+              color:"beige",
               fontFamily: "'Press Start 2P', cursive",
               textShadow: "2px 2px 4px rgba(0,0,0,3.0)",
               whiteSpace: "nowrap"
@@ -52,7 +52,7 @@ const Footer = () => {
                 color:"lightgreen",
                 fontFamily: "'Press Start 2P', cursive",
                 textDecoration:"underline",
-                fontSize: "20px"
+                fontSize: "15px"
               }}
             >
               linkedin
@@ -63,7 +63,7 @@ const Footer = () => {
                 color:"lightgreen",
                 fontFamily: "'Press Start 2P', cursive",
                 textDecoration:"underline",
-                fontSize: "20px"
+                fontSize: "15px"
               }}
             >
               github
