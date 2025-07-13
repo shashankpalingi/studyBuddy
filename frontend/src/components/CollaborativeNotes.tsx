@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   doc, 
@@ -10,6 +10,8 @@ import {
   getDoc
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import './CollaborativeNotes.css';
 
 interface NotesData {
@@ -35,6 +37,28 @@ const CollaborativeNotes: React.FC<CollaborativeNotesProps> = ({ roomId }) => {
   // For debouncing saves
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Quill editor modules and formats
+  const modules = useMemo(() => ({
+    toolbar: [
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'align': [] }],
+      ['link'],
+      ['clean']
+    ],
+  }), []);
+  
+  const formats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'color', 'background',
+    'list', 'bullet',
+    'align',
+    'link'
+  ];
+  
   // First, initialize the notes document if it doesn't exist
   useEffect(() => {
     if (!roomId || !currentUser) return;
@@ -48,7 +72,7 @@ const CollaborativeNotes: React.FC<CollaborativeNotesProps> = ({ roomId }) => {
         if (!docSnap.exists()) {
           console.log('Creating new notes document');
           await setDoc(notesRef, {
-            content: '# Study Notes\n\nUse this space to take collaborative notes with your study group.\n\n## Key Points\n\n- Point 1\n- Point 2\n- Point 3',
+            content: '<h1>Study Notes</h1><p>Use this space to take collaborative notes with your study group.</p><h2>Key Points</h2><ul><li>Point 1</li><li>Point 2</li><li>Point 3</li></ul>',
             lastUpdatedBy: currentUser.uid,
             lastUpdatedAt: Timestamp.now(),
             editorIds: [currentUser.uid]
@@ -152,9 +176,8 @@ const CollaborativeNotes: React.FC<CollaborativeNotesProps> = ({ roomId }) => {
   }, [roomId, currentUser]);
   
   // Handle notes content change
-  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newContent = e.target.value;
-    setNotesContent(newContent);
+  const handleNotesChange = (content: string) => {
+    setNotesContent(content);
     
     // Debounce saving to avoid too many updates
     if (saveTimeoutRef.current) {
@@ -162,7 +185,7 @@ const CollaborativeNotes: React.FC<CollaborativeNotesProps> = ({ roomId }) => {
     }
     
     saveTimeoutRef.current = setTimeout(() => {
-      saveNotes(newContent);
+      saveNotes(content);
     }, 1000); // Save after 1 second of inactivity
   };
   
@@ -236,6 +259,65 @@ const CollaborativeNotes: React.FC<CollaborativeNotesProps> = ({ roomId }) => {
     
     return `${activeEditors.length} people are editing`;
   };
+
+  // Handle download notes
+  const handleDownloadNotes = () => {
+    // Create HTML document with proper styling
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Study Notes</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              margin: 40px;
+              color: #333;
+            }
+            h1 { color: #0066cc; }
+            h2 { color: #444; }
+            ul, ol { padding-left: 20px; }
+            .notes-container {
+              max-width: 800px;
+              margin: 0 auto;
+            }
+            .footer {
+              margin-top: 30px;
+              border-top: 1px solid #eee;
+              padding-top: 10px;
+              color: #666;
+              font-size: 0.8em;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="notes-container">
+            ${notesContent}
+            <div class="footer">
+              <p>Downloaded from StudyBuddy on ${new Date().toLocaleDateString()}</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    // Create a blob from the content
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    
+    // Create a link to download it
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `study_notes_${new Date().toLocaleDateString().replace(/\//g, '-')}.html`;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Clean up
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
   
   if (isLoading) {
     return <div className="notes-loading">Loading notes...</div>;
@@ -261,17 +343,25 @@ const CollaborativeNotes: React.FC<CollaborativeNotesProps> = ({ roomId }) => {
           {error && <span className="save-error">Error: {error}</span>}
         </div>
         <div className="notes-controls">
-          {/* Future feature: Add formatting controls here */}
+          <button 
+            className="download-btn"
+            onClick={handleDownloadNotes}
+            title="Download Notes"
+          >
+            📥 Download
+          </button>
         </div>
       </div>
       
       <div className="notes-content">
-        <textarea
+        <ReactQuill 
+          theme="snow"
           value={notesContent}
           onChange={handleNotesChange}
+          modules={modules}
+          formats={formats}
+          readOnly={!currentUser}
           placeholder="Start typing your collaborative notes here..."
-          disabled={!currentUser}
-          spellCheck="true"
         />
       </div>
     </div>

@@ -42,43 +42,81 @@
   color: #666;
 }
 
+.save-error {
+  color: #d32f2f;
+  font-weight: 500;
+}
+
 .notes-controls {
   display: flex;
   gap: 10px;
+}
+
+.download-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.download-btn:hover {
+  background-color: #45a049;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.15);
+}
+
+.download-btn:active {
+  transform: translateY(1px);
 }
 
 .notes-content {
   flex: 1;
   overflow: hidden;
   padding: 15px;
+  display: flex;
+  flex-direction: column;
 }
 
-.notes-content textarea {
-  width: 100%;
+/* Quill editor styling */
+.notes-content .quill {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.notes-content .ql-container {
+  flex: 1;
+  overflow: auto;
+  font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px;
+}
+
+.notes-content .ql-toolbar {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.notes-content .ql-editor {
   height: 100%;
   padding: 15px;
-  background-color: rgba(255, 255, 255, 0.6);
-  color: #333;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 12px;
-  resize: none;
-  outline: none;
-  font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
-  font-size: 15px;
-  box-shadow: 0 4px 6px rgba(31, 38, 135, 0.05);
-  transition: all 0.3s ease;
 }
 
-.notes-content textarea:focus {
-  background-color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(0, 123, 255, 0.4);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.1);
-}
-
-.notes-content textarea:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+.notes-content .ql-editor.ql-blank::before {
+  color: rgba(0, 0, 0, 0.4);
+  font-style: italic;
 }
 
 .notes-loading,
@@ -99,4 +137,25 @@
   color: #992b2b;
   background: rgba(255, 77, 77, 0.1);
   border: 1px solid rgba(255, 77, 77, 0.2);
+}
+
+/* Adjustments for mobile screens */
+@media screen and (max-width: 768px) {
+  .notes-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  .notes-info {
+    flex-wrap: wrap;
+  }
+  
+  .notes-controls {
+    width: 100%;
+  }
+  
+  .download-btn {
+    width: 100%;
+  }
 } 
