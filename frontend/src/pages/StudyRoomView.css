@@ -498,8 +498,436 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-left: 1px solid rgba(255, 255, 255, 0.8);
-  padding: 20px;
+  padding: 0; /* Changed from 20px to accommodate navbar */
   z-index: 1;
+}
+
+/* Navigation Bar - Now full width */
+.studyroom-nav {
+  width: 100%;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: linear-gradient(135deg, rgba(44, 39, 90, 0.9), rgba(76, 40, 130, 0.9));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  color: white;
+  position: relative;
+  overflow: hidden;
+  z-index: 10;
+}
+
+/* Back button */
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 16px;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.back-icon {
+  font-size: 16px;
+}
+
+.nav-left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.room-title-area {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2px;
+}
+
+.nav-left h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: white;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.room-status {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.room-creator {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 2px;
+}
+
+.creator-name {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.nav-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 6px 16px;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.active-feature-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quick-access-tools {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.nav-tool-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.nav-tool-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.nav-tool-btn.active {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: white;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+/* Timer styling in navbar */
+.compact-timer {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.compact-timer .timer-display {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: white;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+/* Mode-specific styles for timer display */
+.compact-timer.mode-work .timer-display {
+  border-left: 3px solid rgba(93, 63, 211, 0.8);
+}
+
+.compact-timer.mode-shortBreak .timer-display {
+  border-left: 3px solid rgba(46, 204, 113, 0.8);
+}
+
+.compact-timer.mode-longBreak .timer-display {
+  border-left: 3px solid rgba(52, 152, 219, 0.8);
+}
+
+.compact-timer.running .timer-display {
+  background: rgba(107, 201, 80, 0.25);
+  border-color: rgba(107, 201, 80, 0.5);
+  animation: timerPulse 2s infinite;
+}
+
+/* Mode-specific pulse animations */
+.compact-timer.running.mode-work .timer-display {
+  background: rgba(93, 63, 211, 0.25);
+  border-color: rgba(93, 63, 211, 0.5);
+  animation: timerPulseWork 2s infinite;
+}
+
+.compact-timer.running.mode-shortBreak .timer-display {
+  background: rgba(46, 204, 113, 0.25);
+  border-color: rgba(46, 204, 113, 0.5);
+  animation: timerPulseShortBreak 2s infinite;
+}
+
+.compact-timer.running.mode-longBreak .timer-display {
+  background: rgba(52, 152, 219, 0.25);
+  border-color: rgba(52, 152, 219, 0.5);
+  animation: timerPulseLongBreak 2s infinite;
+}
+
+@keyframes timerPulse {
+  0% { box-shadow: 0 0 0 0 rgba(107, 201, 80, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(107, 201, 80, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(107, 201, 80, 0); }
+}
+
+@keyframes timerPulseWork {
+  0% { box-shadow: 0 0 0 0 rgba(93, 63, 211, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(93, 63, 211, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(93, 63, 211, 0); }
+}
+
+@keyframes timerPulseShortBreak {
+  0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(46, 204, 113, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+}
+
+@keyframes timerPulseLongBreak {
+  0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(52, 152, 219, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+}
+
+.compact-timer .timer-display:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Timer expanded controls with higher z-index */
+.timer-expanded-controls {
+  position: fixed; /* Changed from absolute to fixed */
+  top: 80px; /* Position below the navbar */
+  right: 20px; /* Align to the right with some margin */
+  background: rgba(44, 28, 128, 0.95);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 220px;
+  z-index: 10000; /* Ensure it's above all content */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Mode-specific styles for expanded controls */
+.timer-expanded-controls.mode-work {
+  background: linear-gradient(135deg, rgba(93, 63, 211, 0.95), rgba(76, 40, 130, 0.95));
+  border: 1px solid rgba(93, 63, 211, 0.3);
+}
+
+.timer-expanded-controls.mode-shortBreak {
+  background: linear-gradient(135deg, rgba(46, 204, 113, 0.95), rgba(39, 174, 96, 0.95));
+  border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.timer-expanded-controls.mode-longBreak {
+  background: linear-gradient(135deg, rgba(52, 152, 219, 0.95), rgba(41, 128, 185, 0.95));
+  border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.timer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+}
+
+.timer-header span {
+  font-weight: 600;
+  color: white;
+  font-size: 16px;
+}
+
+.timer-info {
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.session-counter {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.close-timer-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-timer-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+.timer-controls {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 8px 0;
+}
+
+.timer-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.timer-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.timer-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.timer-btn.start-btn {
+  background: rgba(107, 201, 80, 0.3);
+}
+
+.timer-btn.start-btn:hover {
+  background: rgba(107, 201, 80, 0.5);
+}
+
+.timer-btn.reset-btn {
+  background: rgba(255, 169, 64, 0.3);
+}
+
+.timer-btn.reset-btn:hover {
+  background: rgba(255, 169, 64, 0.5);
+}
+
+.timer-presets {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.preset-btn {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  border-radius: 16px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preset-btn:hover {
+  color: white;
+  background: rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+.preset-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.preset-btn.active {
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Remove the old mini-timer styles */
+/* 
+.mini-timer {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 6px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 220px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+*/
+
+.feature-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
 }
 
 .sidebar.minimized ~ .main-content-area {
@@ -576,21 +1004,38 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Minimizable Sidebar Styling */
+/* Sidebar - now with beautiful background and positioned below navbar */
 .sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
   width: 280px;
-  height: 100vh;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border-right: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
-  transition: all 0.3s ease;
-  z-index: 1000;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(44, 39, 90, 0.9), rgba(76, 40, 130, 0.9));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: white;
+  transition: width 0.3s ease;
+  overflow-y: auto;
+  z-index: 5;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.3;
+  z-index: -1;
+}
+
+.sidebar-toggle {
   display: flex;
-  flex-direction: column;
+  justify-content: flex-end;
+  padding: 12px;
 }
 
 .sidebar.minimized {
@@ -661,44 +1106,43 @@ h1, h2, h3, h4, h5, h6 {
 
 .sidebar-nav {
   flex: 1;
-  padding: 20px;
-  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
+/* Sidebar buttons with improved styling */
 .sidebar-btn {
-  width: 100%;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.5);
-  border: none;
-  border-radius: 12px;
-  color: #333;
-  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: white;
+  cursor: pointer;
   transition: all 0.2s ease;
-  margin-bottom: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 4px 6px rgba(31, 38, 135, 0.05);
+  text-align: left;
+  width: 100%;
 }
 
 .sidebar-btn:hover {
-  background: rgba(255, 255, 255, 0.7);
-  transform: translateX(5px);
-  box-shadow: 0 4px 8px rgba(31, 38, 135, 0.1);
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .sidebar-btn.active {
-  background: rgba(0, 212, 255, 0.2);
-  border: 1px solid rgba(0, 212, 255, 0.4);
-  color: rgba(0, 85, 170, 0.9);
-  box-shadow: 0 4px 10px rgba(0, 212, 255, 0.15);
+  background: rgba(255, 255, 255, 0.25);
+  border-left: 4px solid rgba(255, 255, 255, 0.8);
 }
 
 .sidebar-btn .icon {
   font-size: 18px;
-  width: 24px;
-  text-align: center;
+  min-width: 24px;
+  display: flex;
+  justify-content: center;
 }
 
 .sidebar-btn .label {
@@ -708,8 +1152,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .sidebar-footer {
   padding: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
 }
 
 .sidebar-footer.minimized {
@@ -1005,3 +1449,60 @@ h1, h2, h3, h4, h5, h6 {
 .video-call-btn:active {
   transform: scale(0.95) !important;
 } 
+
+.sidebar-btn.pip-active {
+  border-left: 4px solid #ff4545;
+  background-color: rgba(255, 69, 69, 0.1);
+}
+
+.sidebar-btn.pip-active .icon {
+  color: #ff4545;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
+} 
+
+/* Remove YouTube Quick Access Button as it's now in the navigation bar */
+/*
+.youtube-quick-access {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: rgba(93, 63, 211, 0.9);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.youtube-quick-access:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.youtube-quick-access:active {
+  transform: translateY(-1px);
+}
+
+.youtube-quick-access .icon {
+  font-size: 16px;
+}
+*/ 

@@ -189,20 +189,37 @@ const joinStudyRoom = async (roomId: string, userId: string): Promise<void> => {
 // Leave a study room
 const leaveStudyRoom = async (roomId: string, userId: string): Promise<void> => {
   try {
+    console.log('Attempting to leave room:', roomId, 'for user:', userId);
     const roomRef = doc(db, 'studyRooms', roomId);
     const roomDoc = await getDoc(roomRef);
     
     if (!roomDoc.exists()) {
+      console.error('Room not found:', roomId);
       throw new Error('Study room not found');
     }
     
     const roomData = roomDoc.data();
-    const updatedParticipants = roomData.participants.filter((id: string) => id !== userId);
     
+    // Check if user is actually in the room
+    if (!roomData.participants.includes(userId)) {
+      console.error('User not in room:', userId);
+      throw new Error('You are not a participant in this room');
+    }
+    
+    // Check if user is the creator (should be handled in UI but double-check)
+    if (roomData.createdBy === userId) {
+      console.error('Creator attempting to leave room:', userId);
+      throw new Error('As the room creator, you cannot leave. You must close or delete the room instead.');
+    }
+    
+    console.log('Removing user from room participants');
+    // Update the room document to remove the participant
     await updateDoc(roomRef, {
-      participants: updatedParticipants,
-      updatedAt: Timestamp.now()
+      participants: arrayRemove(userId),
+      updatedAt: serverTimestamp()
     });
+    
+    console.log('Successfully left room');
   } catch (error) {
     console.error('Error leaving study room:', error);
     throw error;

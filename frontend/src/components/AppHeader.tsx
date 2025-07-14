@@ -64,21 +64,21 @@ const AppHeader: React.FC<AppHeaderProps> = ({
 
       {/* Search Bars - Only show on Study Rooms page */}
       {isStudyRoomsPage && (
-        <div className="hidden md:flex flex-1 justify-center mx-6 space-x-4">
+        <div className="hidden md:flex flex-1 justify-center mx-6 space-x-6">
           {/* Join by Code */}
           <div className="w-2/5 max-w-xs">
-            <div className="flex">
+            <div className="flex relative group">
               <input
                 type="text"
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                 placeholder="Enter room code"
-                className="flex-1 px-3 py-1 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                className="flex-1 px-4 py-2 border border-gray-200 rounded-l-xl bg-white/80 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 text-sm shadow-sm transition-all group-hover:shadow-md"
               />
               <button
                 onClick={handleJoinByCode}
                 disabled={isJoining || !joinCode.trim()}
-                className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-r-lg text-sm hover:opacity-90 disabled:opacity-50"
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-r-xl text-sm hover:shadow-lg transition-all disabled:opacity-50 disabled:hover:shadow-none flex items-center justify-center min-w-[80px]"
               >
                 {isJoining ? 'Joining...' : 'Join'}
               </button>
@@ -87,18 +87,18 @@ const AppHeader: React.FC<AppHeaderProps> = ({
           
           {/* Search */}
           <div className="w-2/5 max-w-xs">
-            <div className="flex">
+            <div className="flex relative group">
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by subject, name, or tag"
-                className="flex-1 px-3 py-1 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                className="flex-1 px-4 py-2 border border-gray-200 rounded-l-xl bg-white/80 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 text-sm shadow-sm transition-all group-hover:shadow-md"
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
               <button
                 onClick={handleSearch}
-                className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-r-lg text-sm hover:opacity-90"
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-r-xl text-sm hover:shadow-lg transition-all flex items-center justify-center min-w-[50px]"
               >
                 <Search className="w-4 h-4" />
               </button>
@@ -207,10 +207,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             >
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="hover:bg-blue-50/50">
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Settings</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-gray-200/50" />
             <DropdownMenuItem 

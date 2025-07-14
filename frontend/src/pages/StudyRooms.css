@@ -40,46 +40,82 @@
   --spread: 100;
   --radius: 14;
   --border: 2;
-  --backdrop: hsl(240 50% 20% / 0.4);
-  --backup-border: hsl(240 50% 40% / 0.2);
+  --backdrop: rgba(255, 255, 255, 0.8);
+  --backup-border: rgba(93, 63, 211, 0.2);
   --size: 300;
   --outer: 1;
   --border-size: calc(var(--border) * 1px);
   --spotlight-size: calc(var(--size) * 1px);
   --hue: calc(var(--base) + (var(--xp, 0) * var(--spread, 0)));
   
-  background-image: radial-gradient(
-    var(--spotlight-size) var(--spotlight-size) at
-    calc(var(--x, 0) * 1px)
-    calc(var(--y, 0) * 1px),
-    hsl(var(--hue, 240) calc(var(--saturation, 100) * 1%) calc(var(--lightness, 70) * 1%) / var(--bg-spot-opacity, 0.2)),
-    transparent
-  );
-  background-color: var(--backdrop);
-  background-size: calc(100% + (2 * var(--border-size))) calc(100% + (2 * var(--border-size)));
-  background-position: 50% 50%;
-  background-attachment: fixed;
-  border: var(--border-size) solid var(--backup-border);
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.8), rgba(240, 240, 255, 0.9));
   position: relative;
   touch-action: none;
+  overflow: hidden;
   
-  border-radius: 1rem;
-  padding: 2rem;
-  margin-bottom: 2rem;
+  border-radius: 1.5rem;
+  padding: 3rem 2rem;
+  margin-bottom: 2.5rem;
   text-align: center;
-  box-shadow: 0 1rem 2rem -1rem rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 30px rgba(93, 63, 211, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.study-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(93, 63, 211, 0.15) 0%, transparent 25%),
+    radial-gradient(circle at 80% 80%, rgba(46, 204, 113, 0.1) 0%, transparent 30%),
+    radial-gradient(circle at 50% 50%, rgba(0, 169, 255, 0.05) 0%, transparent 40%);
+  z-index: -1;
+}
+
+.study-hero::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.4;
+  z-index: -1;
+  animation: subtle-shift 60s linear infinite;
+}
+
+@keyframes subtle-shift {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .study-hero h1 {
-  font-size: 2.5rem;
-  font-weight: bold;
+  font-size: 2.75rem;
+  font-weight: 800;
   margin-bottom: 1rem;
+  background: linear-gradient(90deg, rgba(52,9,121,1) 0%, rgba(0,169,255,1) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
 }
 
 .study-hero p {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   margin-bottom: 2rem;
-  opacity: 0.9;
+  opacity: 0.8;
+  color: #444;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .study-rooms-header {
@@ -103,23 +139,49 @@
 }
 
 .create-room-btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 0.2s;
+  padding: 0.85rem 1.75rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background-color: white;
-  color: #4776e6;
+  background: linear-gradient(90deg, rgba(93, 63, 211, 1), rgba(44, 28, 128, 1));
+  color: white;
   border: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 20px rgba(93, 63, 211, 0.3);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.create-room-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(0, 169, 255, 1), rgba(93, 63, 211, 1));
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.3s ease;
 }
 
 .create-room-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(93, 63, 211, 0.4);
+}
+
+.create-room-btn:hover::before {
+  opacity: 1;
+}
+
+.create-room-btn:active {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(93, 63, 211, 0.3);
 }
 
 .create-room-btn svg {

@@ -562,4 +562,43 @@
   margin: 20px;
   border: 1px solid rgba(255, 255, 255, 0.8);
   box-shadow: 0 4px 12px rgba(31, 38, 135, 0.05);
+}
+
+/* PiP mode button */
+.pip-mode-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.pip-mode-button:hover {
+  background-color: rgba(93, 63, 211, 0.9);
+  opacity: 1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.pip-mode-button:active {
+  transform: translateY(0);
+}
+
+.pip-mode-button .pip-icon {
+  font-size: 14px;
+  margin-right: 2px;
 } 

@@ -1,0 +1,92 @@
+.draggable-youtube-player {
+  border-radius: 8px;
+  background-color: #1a1a1a;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: box-shadow 0.2s ease;
+  z-index: 2000;
+}
+
+.draggable-youtube-player:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.draggable-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #2a2a2a;
+  padding: 4px 8px;
+  height: 28px;
+  cursor: move;
+}
+
+.drag-handle {
+  width: 40px;
+  height: 4px;
+  background-color: #666;
+  border-radius: 2px;
+}
+
+.player-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.player-controls button {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  height: 18px;
+  width: 18px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  border-radius: 50%;
+}
+
+.player-controls button:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.close-btn:hover {
+  color: #ff5555;
+}
+
+.player-container {
+  flex: 1;
+  position: relative;
+}
+
+.resize-handle {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  bottom: 0;
+  right: 0;
+  cursor: nwse-resize;
+  background: transparent;
+  z-index: 10;
+}
+
+.resize-handle:before {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 12px;
+  height: 12px;
+  border-bottom: 2px solid #aaa;
+  border-right: 2px solid #aaa;
+}
+
+.resize-handle:hover:before {
+  border-color: #fff;
+} 

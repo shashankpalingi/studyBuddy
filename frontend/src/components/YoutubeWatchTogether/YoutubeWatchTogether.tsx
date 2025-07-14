@@ -12,6 +12,7 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import YoutubePlayer from './YoutubePlayer';
+import DraggableYoutubePlayer from './DraggableYoutubePlayer';
 import VideoSearch from './VideoSearch';
 import VideoControls from './VideoControls';
 import VideoQueue from './VideoQueue';
@@ -38,19 +39,31 @@ interface QueueItem {
 
 interface YoutubeWatchTogetherProps {
   roomId: string;
+  isPipMode?: boolean;
+  onPipToggle?: (isPipEnabled: boolean) => void;
 }
 
-const YoutubeWatchTogether: React.FC<YoutubeWatchTogetherProps> = ({ roomId }) => {
+const YoutubeWatchTogether: React.FC<YoutubeWatchTogetherProps> = ({ 
+  roomId, 
+  isPipMode = false,
+  onPipToggle
+}) => {
   const { currentUser, userProfile } = useAuth();
   const [videoState, setVideoState] = useState<VideoState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isHost, setIsHost] = useState(false);
   const [syncState, setSyncState] = useState<'synced' | 'syncing' | 'out-of-sync'>('syncing');
+  const [localPipMode, setLocalPipMode] = useState(isPipMode);
   
   // Track if the local player is being controlled by us or remote update
   const isLocalUpdate = useRef(false);
   const playerRef = useRef<any>(null);
+
+  // Handle changes to isPipMode prop
+  useEffect(() => {
+    setLocalPipMode(isPipMode);
+  }, [isPipMode]);
   
   // Initialize and subscribe to video state in Firestore
   useEffect(() => {
@@ -328,6 +341,22 @@ const YoutubeWatchTogether: React.FC<YoutubeWatchTogetherProps> = ({ roomId }) =
       queue: newQueue
     });
   };
+
+  // Handle PiP mode toggle
+  const togglePipMode = () => {
+    const newPipMode = !localPipMode;
+    setLocalPipMode(newPipMode);
+    if (onPipToggle) {
+      onPipToggle(newPipMode);
+    }
+  };
+
+  // Handle closing the player in PiP mode
+  const handleClosePlayer = () => {
+    if (onPipToggle) {
+      onPipToggle(false);
+    }
+  };
   
   if (loading) {
     return <div className="youtube-loading">Loading video player...</div>;
@@ -335,6 +364,20 @@ const YoutubeWatchTogether: React.FC<YoutubeWatchTogetherProps> = ({ roomId }) =
   
   if (error) {
     return <div className="youtube-error">{error}</div>;
+  }
+
+  // If in PiP mode, render just the player component in draggable container
+  if (localPipMode) {
+    return (
+      <DraggableYoutubePlayer
+        videoId={videoState?.videoId || ''}
+        onReady={onPlayerReady}
+        onStateChange={onPlayerStateChange}
+        isPipMode={true}
+        onClose={handleClosePlayer}
+        onMinimize={togglePipMode}
+      />
+    );
   }
   
   return (
@@ -358,6 +401,18 @@ const YoutubeWatchTogether: React.FC<YoutubeWatchTogetherProps> = ({ roomId }) =
                   <p>No video selected</p>
                   <p>Search for a YouTube video to begin</p>
                 </div>
+              )}
+
+              {/* Add PiP mode button */}
+              {videoState.videoId && (
+                <button 
+                  className="pip-mode-button"
+                  onClick={togglePipMode}
+                  title="Picture-in-picture mode"
+                >
+                  <span className="pip-icon">⎘</span>
+                  <span>Float Player</span>
+                </button>
               )}
             </>
           )}
