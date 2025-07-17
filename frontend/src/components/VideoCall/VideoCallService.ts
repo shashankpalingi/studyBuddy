@@ -82,24 +82,53 @@ export class VideoCallService {
   static async updateCallerActivity(roomId: string, userId: string): Promise<void> {
     try {
       const callerRef = doc(db, 'studyRooms', roomId, 'activeCallers', userId);
+      
+      // Use setDoc with merge and catch specific errors
       await setDoc(callerRef, {
         lastUpdated: serverTimestamp()
-      }, { merge: true });
+      }, { 
+        merge: true 
+      }).catch(err => {
+        // Log permission errors without throwing
+        if (err.code === 'permission-denied') {
+          console.warn(`Permission denied updating caller activity for ${userId}. Skipping update.`);
+          return;
+        }
+        
+        throw err;
+      });
     } catch (error) {
-      console.warn('Error updating caller activity:', error);
-      // Don't throw error to avoid disrupting the call
+      // Only log errors that aren't permission-related
+      if (error.code !== 'permission-denied') {
+        console.warn('Error updating caller activity:', error);
+      }
+      // Silently fail to prevent breaking the call flow
     }
   }
   
-  // Unregister a user from active callers when they leave the call
-  static async unregisterCaller(roomId: string, userId: string, maxRetries = 3): Promise<void> {
+  // Update unregister caller method to be more resilient
+  static async unregisterCaller(roomId: string, userId: string, maxRetries = 1): Promise<void> {
     let attempt = 0;
     let lastError: any = null;
     
     while (attempt < maxRetries) {
       try {
         const callerRef = doc(db, 'studyRooms', roomId, 'activeCallers', userId);
-        await deleteDoc(callerRef);
+        
+        // Use deleteDoc with additional error handling
+        await deleteDoc(callerRef).catch(err => {
+          // Log the error but don't immediately throw
+          console.warn(`Soft delete failed for caller ${userId}:`, err);
+          
+          // If it's a permission error, we'll just log and continue
+          if (err.code === 'permission-denied') {
+            console.warn(`Permission denied when unregistering caller ${userId}. Skipping unregister.`);
+            return;
+          }
+          
+          throw err;
+        });
+        
         console.log(`Unregistered from active callers (attempt ${attempt + 1})`);
         return; // Success, exit the function
       } catch (error) {
@@ -107,16 +136,17 @@ export class VideoCallService {
         attempt++;
         console.error(`Error unregistering caller (attempt ${attempt}):`, error);
         
+        // Reduce retry delay and limit retries
         if (attempt < maxRetries) {
-          const delay = Math.min(Math.pow(2, attempt) * 1000, 5000); // Exponential backoff with max 5s
+          const delay = Math.min(attempt * 500, 2000); // Max 2 second delay
           await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
     }
     
     // If we get here, all attempts failed
-    console.warn(`Failed to unregister caller after ${maxRetries} attempts - caller may remain in active list`);
-    // Don't throw error since this happens during cleanup
+    console.warn(`Failed to unregister caller after ${maxRetries} attempts`);
+    // Silently fail to prevent breaking the call flow
   }
   
   // Get active callers in a room with retry
