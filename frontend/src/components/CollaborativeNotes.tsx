@@ -34,6 +34,40 @@ const CollaborativeNotes: React.FC<CollaborativeNotesProps> = ({ roomId }) => {
   const [activeEditors, setActiveEditors] = useState<string[]>([]);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   
+  // Speech recognition state
+  const [isListening, setIsListening] = useState(false);
+  const [speechRecognition, setSpeechRecognition] = useState<SpeechRecognition | null>(null);
+  
+  // State for speech recognition support
+  const [speechSupported, setSpeechSupported] = useState(false);
+
+  // Check speech recognition support on component mount
+  useEffect(() => {
+    // Check for speech recognition support across different browser implementations
+    const checkSpeechSupport = () => {
+      const SpeechRecognition = 
+        window.SpeechRecognition || 
+        window.webkitSpeechRecognition || 
+        window.mozSpeechRecognition || 
+        window.msSpeechRecognition;
+      
+      if (SpeechRecognition) {
+        try {
+          const recognition = new SpeechRecognition();
+          setSpeechSupported(true);
+        } catch (err) {
+          console.error('Speech recognition not fully supported:', err);
+          setSpeechSupported(false);
+        }
+      } else {
+        console.error('Speech recognition API not found');
+        setSpeechSupported(false);
+      }
+    };
+
+    checkSpeechSupport();
+  }, []);
+  
   // For debouncing saves
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -59,6 +93,139 @@ const CollaborativeNotes: React.FC<CollaborativeNotesProps> = ({ roomId }) => {
     'link'
   ];
   
+  // Toggle speech recognition
+  const toggleSpeechRecognition = () => {
+    // Ensure speech recognition is supported
+    if (!speechSupported) {
+      setError('Speech recognition is not supported in this browser. Try Chrome, Edge, or Safari.');
+      return;
+    }
+
+    // Dynamically get the correct SpeechRecognition constructor
+    const SpeechRecognition = 
+      window.SpeechRecognition || 
+      window.webkitSpeechRecognition || 
+      window.mozSpeechRecognition || 
+      window.msSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setError('Speech recognition API is not available.');
+      return;
+    }
+    
+    // Stop any existing recognition
+    try {
+      if (speechRecognition) {
+        speechRecognition.stop();
+      }
+    } catch (stopErr) {
+      console.warn('Error stopping speech recognition:', stopErr);
+    }
+    
+    // Reset state
+    setIsListening(false);
+    setError('');
+    
+    // If not currently listening, start a new recognition session
+    if (!isListening) {
+      // Recreate the recognition object to ensure a fresh state
+      const newRecognition = new SpeechRecognition();
+      
+      // Configure new recognition
+      newRecognition.continuous = true;
+      newRecognition.interimResults = true;
+      newRecognition.lang = 'en-US';
+      
+      // Event handlers
+      let accumulatedTranscript = '';
+      
+      newRecognition.onresult = (event) => {
+        let finalTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript + ' ';
+          }
+        }
+        
+        // Accumulate transcripts
+        if (finalTranscript.trim()) {
+          accumulatedTranscript += finalTranscript.trim() + ' ';
+          
+          // Prepare updated content
+          const updatedContent = notesContent 
+            ? `${notesContent}\n\n${accumulatedTranscript.trim()}` 
+            : accumulatedTranscript.trim();
+          
+          // Update state and save
+          setNotesContent(updatedContent);
+          saveNotes(updatedContent);
+        }
+      };
+      
+      newRecognition.onstart = () => {
+        setIsListening(true);
+        setError('');
+      };
+      
+      newRecognition.onend = () => {
+        // Reset accumulated transcript
+        accumulatedTranscript = '';
+        
+        // If we were intentionally listening, try to restart
+        if (isListening) {
+          try {
+            newRecognition.start();
+          } catch (restartErr) {
+            console.error('Error restarting speech recognition:', restartErr);
+            setError('Speech recognition stopped. Please restart.');
+            setIsListening(false);
+          }
+        }
+      };
+      
+      newRecognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        
+        // Handle specific error cases
+        switch (event.error) {
+          case 'no-speech':
+            setError('No speech was detected. Please speak into the microphone.');
+            break;
+          case 'audio-capture':
+            setError('No microphone was found. Ensure microphone is connected.');
+            break;
+          case 'not-allowed':
+            setError('Microphone access was denied. Please check your browser settings.');
+            break;
+          case 'aborted':
+            // Silently try to restart
+            try {
+              newRecognition.start();
+            } catch (restartErr) {
+              console.error('Error restarting after aborted:', restartErr);
+              setIsListening(false);
+            }
+            return;
+          default:
+            setError(`Speech recognition error: ${event.error}`);
+        }
+        
+        setIsListening(false);
+      };
+      
+      // Start the new recognition
+      try {
+        newRecognition.start();
+        setSpeechRecognition(newRecognition);
+      } catch (startErr) {
+        console.error('Error starting speech recognition:', startErr);
+        setError('Failed to start speech recognition. Please check microphone permissions.');
+        setIsListening(false);
+      }
+    }
+  };
+
   // First, initialize the notes document if it doesn't exist
   useEffect(() => {
     if (!roomId || !currentUser) return;
@@ -332,6 +499,7 @@ const CollaborativeNotes: React.FC<CollaborativeNotesProps> = ({ roomId }) => {
     );
   }
   
+  // Render method
   return (
     <div className="collaborative-notes">
       <div className="notes-header">
@@ -343,6 +511,16 @@ const CollaborativeNotes: React.FC<CollaborativeNotesProps> = ({ roomId }) => {
           {error && <span className="save-error">Error: {error}</span>}
         </div>
         <div className="notes-controls">
+          {/* Conditionally render voice typing button with more robust check */}
+          {speechSupported && (
+            <button 
+              className={`speech-btn ${isListening ? 'listening' : ''}`}
+              onClick={toggleSpeechRecognition}
+              title={isListening ? 'Stop Voice Typing' : 'Start Voice Typing'}
+            >
+              {isListening ? '🛑 Stop Voice' : '🎙️ Voice Type'}
+            </button>
+          )}
           <button 
             className="download-btn"
             onClick={handleDownloadNotes}
