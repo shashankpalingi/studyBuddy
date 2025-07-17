@@ -140,7 +140,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen w-screen relative overflow-hidden flex">
+    <div className="min-h-screen w-screen relative overflow-hidden flex custom-cursor-page">
       {/* Back button */}
       <motion.button
         initial={{ opacity: 0, x: -20 }}

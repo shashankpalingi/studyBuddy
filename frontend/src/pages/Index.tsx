@@ -22,7 +22,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="w-full min-h-screen bg-gray-900 m-0 p-0 overflow-x-hidden">
+    <div className="w-full min-h-screen bg-gray-900 m-0 p-0 overflow-x-hidden custom-cursor-page">
       <Navigation />
       <HeroSection />
       <div className="relative bg-transparent">

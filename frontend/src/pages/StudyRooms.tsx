@@ -358,6 +358,25 @@ const StudyRooms: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
+          {/* Add floating 3D icons */}
+          <div className="study-hero-icons">
+            <div className="study-hero-icon">
+              <Book size={20} color="#5D3FD3" />
+            </div>
+            <div className="study-hero-icon">
+              <Users size={20} color="#00A9FF" />
+            </div>
+            <div className="study-hero-icon">
+              <Search size={20} color="#00C07F" />
+            </div>
+            <div className="study-hero-icon">
+              <Plus size={20} color="#FF6B6B" />
+            </div>
+          </div>
+          
+          {/* Particle effect container */}
+          <div className="particles"></div>
+          
           <h1>Find Your Perfect Study Space</h1>
           <p>Join a room or create your own to study with peers</p>
           <button

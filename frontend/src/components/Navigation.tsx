@@ -28,16 +28,16 @@ const Navigation = () => {
       onClick: () => handleSectionScroll('hero')
     },
     { 
-      name: 'Features', 
-      url: '/#features', 
-      icon: BookOpen,
-      onClick: () => handleSectionScroll('features')
-    },
-    { 
       name: 'Programs', 
       url: '/#programs', 
       icon: Users,
       onClick: () => handleSectionScroll('programs')
+    },
+    { 
+      name: 'Features', 
+      url: '/#features', 
+      icon: BookOpen,
+      onClick: () => handleSectionScroll('features')
     },
     { 
       name: 'Sign In', 

@@ -110,6 +110,22 @@ All colors MUST be HSL.
   }
 }
 
+/* Custom cursor styles */
+.custom-cursor-page {
+  cursor: url('/cursor01.png'), auto;
+}
+
+.custom-cursor-page button,
+.custom-cursor-page a,
+.custom-cursor-page [role="button"],
+.custom-cursor-page input[type="submit"],
+.custom-cursor-page input[type="button"],
+.custom-cursor-page input[type="reset"],
+.custom-cursor-page .button,
+.custom-cursor-page [class*="btn"] {
+  cursor: url('/cursor02.png'), pointer;
+}
+
 @layer utilities {
   .gradient-text {
     background: linear-gradient(90deg, #D946EF 0%, #6366F1 50%, #F59E0B 100%);
