@@ -47,15 +47,18 @@
   font-weight: 500;
 }
 
+/* Improved video grid layout */
 .videos-container {
   flex: 1;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 0.75rem;
   padding: 0.75rem;
   overflow: auto;
   height: calc(100% - 120px);
   background-color: rgba(245, 247, 250, 0.5);
+  align-items: center;
+  justify-content: center;
 }
 
 /* Local video styles */
@@ -105,32 +108,21 @@
   border-radius: 12px;
 }
 
-/* Remote videos grid */
-.remote-videos-grid {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  grid-auto-rows: 1fr;
-  gap: 0.75rem;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-}
-
+/* Remote video container improvements */
 .remote-video-container {
   position: relative;
-  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 16 / 9;
   border-radius: 12px;
+  overflow: hidden;
   background-color: rgba(255, 255, 255, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.8);
   box-shadow: 0 4px 12px rgba(31, 38, 135, 0.15);
-  aspect-ratio: 16/9;
-  height: fit-content;
   transition: all 0.3s ease;
 }
 
 .remote-video-container:hover {
-  transform: translateY(-2px);
+  transform: scale(1.02);
   box-shadow: 0 6px 16px rgba(31, 38, 135, 0.2);
 }
 
@@ -139,6 +131,31 @@
   height: 100%;
   object-fit: cover;
   border-radius: 12px;
+}
+
+.remote-video-container .video-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Connection status indicators */
+.remote-video-container.connecting .video-label,
+.remote-video-container.error .video-label {
+  background: rgba(255, 165, 0, 0.7); /* Orange for connecting/error */
+}
+
+.remote-video-container.disconnected .video-label {
+  background: rgba(255, 0, 0, 0.7); /* Red for disconnected */
 }
 
 /* Connection state styling */
@@ -296,26 +313,34 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .videos-container {
-    flex-direction: column;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.5rem;
+    height: calc(100% - 100px);
   }
   
   .local-video-container {
-    max-width: 100%;
+    max-width: 200px;
+    max-height: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .videos-container {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    height: calc(100% - 80px);
   }
   
-  .remote-videos-grid {
-    grid-template-columns: 1fr;
+  .local-video-container {
+    max-width: 150px;
+    max-height: 100px;
   }
   
   .video-controls {
-    padding: 0.75rem;
-  }
-  
-  .control-button {
-    width: 2.75rem;
-    height: 2.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }
 

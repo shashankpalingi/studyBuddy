@@ -38,6 +38,7 @@ const FileSharing: React.FC<FileSharingProps> = ({ roomId }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   
   // Load shared files
   useEffect(() => {
@@ -84,19 +85,20 @@ const FileSharing: React.FC<FileSharingProps> = ({ roomId }) => {
     
     try {
       setIsUploading(true);
-      setUploadProgress(0);
+      setUploadProgress(10);
       setError('');
       
       // Upload to Cloudinary
-      const { url, publicId } = await uploadToCloudinary(selectedFile, `studybuddy/rooms/${roomId}/files`);
-      setUploadProgress(100);
+      setUploadProgress(30);
+      const { url, public_id } = await uploadToCloudinary(selectedFile, `studybuddy/rooms/${roomId}/files`);
+      setUploadProgress(80);
       
       // Save file reference in Firestore
       const filesRef = collection(db, 'studyRooms', roomId, 'files');
       await addDoc(filesRef, {
         name: selectedFile.name,
         url: url,
-        publicId: publicId,
+        publicId: public_id,
         type: selectedFile.type,
         size: selectedFile.size,
         uploadedBy: currentUser.uid,
@@ -104,15 +106,35 @@ const FileSharing: React.FC<FileSharingProps> = ({ roomId }) => {
         createdAt: serverTimestamp()
       });
       
+      setUploadProgress(100);
       setIsUploading(false);
+      setSuccessMessage('File uploaded successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       console.error('Error uploading file:', err);
-      setError('Failed to upload file');
+      setError('Failed to upload file: ' + (err instanceof Error ? err.message : String(err)));
       setIsUploading(false);
     }
     
     // Reset file input
     e.target.value = '';
+  };
+  
+  // Handle file download
+  const handleDownloadFile = (file: SharedFile) => {
+    try {
+      // Create a temporary anchor element
+      const anchor = document.createElement('a');
+      anchor.href = file.url;
+      anchor.target = '_blank';
+      anchor.download = file.name;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+    } catch (err) {
+      console.error('Error downloading file:', err);
+      setError('Failed to download file');
+    }
   };
   
   // Handle file deletion
@@ -128,46 +150,28 @@ const FileSharing: React.FC<FileSharingProps> = ({ roomId }) => {
       return;
     }
     
-    console.log("Attempting to delete file:", file.id, "from room:", roomId);
+    // Ask for confirmation before deleting
+    if (!window.confirm(`Are you sure you want to delete ${file.name}?`)) {
+      return;
+    }
     
     try {
-      // Skip Cloudinary deletion temporarily
-      // Note: This will leave orphaned files in Cloudinary
-      // In a production app, you would implement a server-side
-      // solution to handle this properly
-      
-      // Delete from Firestore
+      // Delete from Firestore first
       console.log("Deleting file reference from Firestore...");
       const fileRef = doc(db, 'studyRooms', roomId, 'files', file.id);
       await deleteDoc(fileRef);
       
-      // Show success message
-      console.log("File deleted successfully from Firestore");
-      
-      // Clear any errors and provide user feedback
-      setError('');
-      // Temporarily add a success message
-      const messageEl = document.createElement('div');
-      messageEl.className = 'success-message';
-      messageEl.innerText = 'File deleted successfully';
-      messageEl.style.padding = '0.75rem';
-      messageEl.style.marginBottom = '1rem';
-      messageEl.style.backgroundColor = '#10B981';
-      messageEl.style.color = 'white';
-      messageEl.style.borderRadius = '6px';
-      messageEl.style.fontSize = '0.9rem';
-      
-      const errorEl = document.querySelector('.error-message');
-      if (errorEl) {
-        errorEl.parentNode?.insertBefore(messageEl, errorEl);
-      } else {
-        document.querySelector('.file-sharing-header')?.insertAdjacentElement('afterend', messageEl);
+      // Then attempt to delete from Cloudinary
+      try {
+        await deleteFromCloudinary(file.publicId);
+      } catch (cloudinaryError) {
+        console.warn('Failed to delete from Cloudinary, but file reference was removed:', cloudinaryError);
       }
       
-      // Remove success message after 3 seconds
-      setTimeout(() => {
-        messageEl.remove();
-      }, 3000);
+      // Show success message
+      setSuccessMessage('File deleted successfully');
+      setTimeout(() => setSuccessMessage(''), 3000);
+      setError('');
     } catch (err) {
       console.error('Error deleting file:', err);
       setError('Failed to delete file: ' + (err instanceof Error ? err.message : String(err)));
@@ -211,6 +215,7 @@ const FileSharing: React.FC<FileSharingProps> = ({ roomId }) => {
       </div>
       
       {error && <div className="error-message">{error}</div>}
+      {successMessage && <div className="success-message">{successMessage}</div>}
       
       {isUploading && (
         <div className="upload-progress">
@@ -232,24 +237,37 @@ const FileSharing: React.FC<FileSharingProps> = ({ roomId }) => {
             <div key={file.id} className="file-item">
               <div className="file-icon">{getFileIcon(file.type)}</div>
               <div className="file-info">
-                <a href={file.url} target="_blank" rel="noopener noreferrer" className="file-name">
+                <div 
+                  onClick={() => handleDownloadFile(file)} 
+                  className="file-name clickable"
+                  title="Click to download"
+                >
                   {file.name}
-                </a>
+                </div>
                 <div className="file-meta">
                   <span>{formatFileSize(file.size)}</span>
                   <span>•</span>
                   <span>By {file.uploadedByName}</span>
                 </div>
               </div>
-              {currentUser?.uid === file.uploadedBy && (
+              <div className="file-actions">
                 <button
-                  onClick={() => handleDeleteFile(file)}
-                  className="delete-button"
-                  title="Delete file"
+                  onClick={() => handleDownloadFile(file)}
+                  className="download-button"
+                  title="Download file"
                 >
-                  🗑️
+                  📥
                 </button>
-              )}
+                {currentUser?.uid === file.uploadedBy && (
+                  <button
+                    onClick={() => handleDeleteFile(file)}
+                    className="delete-button"
+                    title="Delete file"
+                  >
+                    🗑️
+                  </button>
+                )}
+              </div>
             </div>
           ))
         )}

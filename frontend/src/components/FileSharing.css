@@ -192,6 +192,36 @@
   font-size: 0.8rem;
 }
 
+.file-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.download-button {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 102, 204, 0.3);
+  color: #0066cc;
+  cursor: pointer;
+  padding: 4px;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  transition: all 0.2s ease;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(31, 38, 135, 0.05);
+}
+
+.download-button:hover {
+  opacity: 1;
+  transform: scale(1.05);
+  background-color: rgba(0, 102, 204, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 102, 204, 0.1);
+}
+
 .delete-button {
   background: rgba(255, 255, 255, 0.6);
   border: 1px solid rgba(255, 77, 77, 0.3);
@@ -201,7 +231,6 @@
   font-size: 0.9rem;
   opacity: 0.8;
   transition: all 0.2s ease;
-  margin-left: 10px;
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -216,4 +245,12 @@
   transform: scale(1.05);
   background-color: rgba(255, 77, 77, 0.1);
   box-shadow: 0 4px 8px rgba(255, 77, 77, 0.1);
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  text-decoration: underline;
 } 

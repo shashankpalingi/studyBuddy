@@ -794,6 +794,85 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
     };
   }, [isReconnecting, reinitializeConnection]);
   
+  // Function to play video with retry logic
+  const playVideo = (peerId: string, stream: MediaStream) => {
+    const videoElement = peerVideoRefs.current[peerId];
+    if (!videoElement) {
+      console.warn(`No video element found for peer ${peerId}`);
+      return;
+    }
+
+    // Set the stream
+    if (videoElement.srcObject !== stream) {
+      videoElement.srcObject = stream;
+    }
+
+    // Initially muted to help with autoplay
+    videoElement.muted = true;
+
+    // Use play() with catch, retry logic and max attempts
+    const attemptPlay = (attempts = 0, delay = 200) => {
+      if (attempts >= 5) {
+        console.warn(`Max retry attempts reached for peer ${peerId}`);
+        setConnectionStatus(prev => ({
+          ...prev,
+          [peerId]: 'error'
+        }));
+        return;
+      }
+
+      videoElement.play()
+        .catch(err => {
+          if (err.name === 'AbortError' && attempts < 5) {
+            console.warn(`Play was aborted for peer ${peerId} (attempt ${attempts+1}/5), retrying in ${delay}ms`);
+            setTimeout(() => attemptPlay(attempts + 1, delay * 1.5), delay);
+          } else {
+            console.error("Error playing remote video:", err);
+            setConnectionStatus(prev => ({
+              ...prev,
+              [peerId]: 'error'
+            }));
+          }
+        });
+    };
+
+    attemptPlay();
+  };
+
+  // Handle peer disconnection
+  const handlePeerDisconnect = (peerId: string) => {
+    console.log(`Handling disconnect for peer: ${peerId}`);
+    
+    // Remove from connected peers
+    setConnectedPeers(prev => prev.filter(id => id !== peerId));
+    
+    // Remove from peer connections
+    delete peerConnections.current[peerId];
+    
+    // Remove video ref
+    if (peerVideoRefs.current[peerId]) {
+      delete peerVideoRefs.current[peerId];
+    }
+    
+    // Update connection status
+    setConnectionStatus(prev => {
+      const newStatus = { ...prev };
+      delete newStatus[peerId];
+      return newStatus;
+    });
+    
+    // If this was the focused peer, reset focus
+    if (focusedPeerId === peerId) {
+      setFocusedPeerId(null);
+    }
+    
+    // Attempt to unregister caller from Firestore
+    if (currentUser && roomId) {
+      VideoCallService.unregisterCaller(roomId, peerId)
+        .catch(err => console.warn('Error unregistering disconnected caller:', err));
+    }
+  };
+  
   return (
     <div className="video-call-container">
       {error ? (
@@ -826,39 +905,53 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
           </div>
           
           <div className="videos-container">
-            {/* My video */}
-            <div className="local-video-container">
-              <video ref={myVideoRef} autoPlay muted playsInline className={!isVideoEnabled ? 'disabled' : ''} />
+            {/* My video - always first */}
+            <div className={`local-video-container ${!isVideoEnabled ? 'video-disabled' : ''}`}>
+              <video 
+                ref={myVideoRef} 
+                autoPlay 
+                muted 
+                playsInline 
+                className={!isVideoEnabled ? 'disabled' : ''}
+              />
               {!isVideoEnabled && (
                 <div className="video-disabled-overlay">
                   <VideoCameraIconOff className="h-12 w-12 text-white opacity-50" />
                 </div>
               )}
-              <div className="video-label">You {isAudioEnabled ? '' : '(Muted)'}</div>
+              <div className="video-label">
+                You {isAudioEnabled ? '' : '(Muted)'}
+              </div>
             </div>
             
-            {/* Remote videos grid */}
-            <div className="remote-videos-grid">
-              {connectedPeers.map(peerId => {
-                const activeCaller = activeCallers.find(caller => caller.peerId === peerId);
-                const connectionState = connectionStatus[peerId] || 'connecting';
-                
-                return (
-                  <div key={peerId} className={`remote-video-container ${connectionState}`}>
-                    <video
-                      ref={el => peerVideoRefs.current[peerId] = el}
-                      autoPlay
-                      playsInline
-                    />
-                    <div className="video-label">
-                      {activeCaller?.userName || 'Participant'} 
-                      {connectionState === 'connecting' && ' (Connecting...)'}
-                      {connectionState === 'error' && ' (Connection Issue)'}
-                    </div>
+            {/* Remote videos */}
+            {connectedPeers.map(peerId => {
+              const activeCaller = activeCallers.find(caller => caller.peerId === peerId);
+              const connectionState = connectionStatus[peerId] || 'connecting';
+              
+              return (
+                <div 
+                  key={peerId} 
+                  className={`remote-video-container ${connectionState}`}
+                  onClick={() => handleFocusVideo(peerId)}
+                >
+                  <video
+                    ref={el => peerVideoRefs.current[peerId] = el}
+                    autoPlay
+                    playsInline
+                    muted={remoteMuted}
+                  />
+                  <div className="video-label">
+                    {activeCaller?.userName || `Participant ${peerId.split('-')[1]}`}
+                    {connectionState !== 'connected' && ` (${
+                      connectionState === 'connecting' ? 'Connecting...' :
+                      connectionState === 'error' ? 'Connection Issue' :
+                      'Disconnected'
+                    })`}
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
           
           <div className="video-controls">

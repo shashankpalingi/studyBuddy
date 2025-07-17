@@ -238,6 +238,7 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ roomId }) => {
     });
   };
 
+  // Draw current shape while user is interacting
   const drawCurrentShape = (currentPoints: Point[], endPoint?: Point) => {
     const canvas = canvasRef.current;
     const context = contextRef.current;
@@ -339,6 +340,7 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ roomId }) => {
       setCurrentPoints(prev => [...prev, { x, y }]);
       drawCurrentShape([...currentPoints, { x, y }]);
     } else {
+      // For shapes like rectangle, circle, and line, only use start point and current mouse position
       drawCurrentShape(currentPoints, { x, y });
     }
   };
@@ -347,13 +349,30 @@ const Whiteboard: React.FC<WhiteboardProps> = ({ roomId }) => {
     if (!isDrawing || !currentUser || currentPoints.length === 0) return;
     setIsDrawing(false);
 
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
     const whiteboardRef = doc(db, 'studyRooms', roomId, 'tools', 'whiteboard');
     const shapesCollection = collection(whiteboardRef, 'shapes');
 
     try {
+      let finalPoints = [...currentPoints];
+      
+      // For shapes that need only 2 points (start and end)
+      if (currentTool === 'rectangle' || currentTool === 'circle' || currentTool === 'line') {
+        // Get the mouse position at the end of drawing
+        const rect = canvas.getBoundingClientRect();
+        const lastMouseEvent = window.event as MouseEvent;
+        if (lastMouseEvent) {
+          const endX = lastMouseEvent.clientX - rect.left;
+          const endY = lastMouseEvent.clientY - rect.top;
+          finalPoints = [currentPoints[0], { x: endX, y: endY }];
+        }
+      }
+      
       const newShape: Omit<Shape, 'id'> = {
         type: currentTool,
-        points: [...currentPoints], // Make a copy to ensure points are saved properly
+        points: finalPoints,
         color: currentTool === 'eraser' ? '#ffffff' : currentColor,
         width: currentWidth,
         timestamp: Timestamp.now().toMillis(),

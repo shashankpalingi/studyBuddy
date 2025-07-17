@@ -251,7 +251,7 @@ const StudyTimer: React.FC<StudyTimerProps> = ({ roomId }) => {
         <div className="timer-status">
           {timerState.isRunning ? 'In Progress' : 'Timer stopped'}
         </div>
-        <div className="session-counter">
+        <div className="session-counter" style={{ color: '#333', fontWeight: 'bold' }}>
           Completed Pomodoros: {timerState.completedSessions}
         </div>
       </div>

@@ -545,8 +545,32 @@ const StudyRoomView: React.FC = () => {
     }
   };
 
+  // Use localStorage to persist active feature across reloads
+  useEffect(() => {
+    if (roomId) {
+      // Get active feature from localStorage on component mount
+      const savedFeature = localStorage.getItem(`studyroom-${roomId}-activeFeature`);
+      const validFeatures: Feature[] = ['notes', 'files', 'timer', 'tasks', 'polls', 'whiteboard', 'youtube', 'chat'];
+      
+      if (savedFeature && validFeatures.includes(savedFeature as Feature)) {
+        setActiveFeature(savedFeature as Feature);
+      } else {
+        // If no valid feature is found, default to 'notes'
+        setActiveFeature('notes');
+        localStorage.setItem(`studyroom-${roomId}-activeFeature`, 'notes');
+      }
+    }
+  }, [roomId]);
+
   // Handle feature change
   const changeActiveFeature = (feature: Feature) => {
+    // Validate feature
+    const validFeatures: Feature[] = ['notes', 'files', 'timer', 'tasks', 'polls', 'whiteboard', 'youtube', 'chat'];
+    if (!validFeatures.includes(feature)) {
+      console.warn(`Invalid feature: ${feature}. Defaulting to 'notes'.`);
+      feature = 'notes';
+    }
+    
     // If YouTube is in PiP mode and user clicks on YouTube,
     // disable PiP mode and show YouTube as main feature
     if (feature === 'youtube' && youtubeInPipMode) {
@@ -554,11 +578,20 @@ const StudyRoomView: React.FC = () => {
       setLastActiveYoutubeState(false);
     }
     
+    // Save active feature to localStorage
+    if (roomId) {
+      localStorage.setItem(`studyroom-${roomId}-activeFeature`, feature);
+    }
+    
     setActiveFeature(feature);
   };
   
   const renderFeatureContent = () => {
-    switch (activeFeature) {
+    // Add type guard to ensure activeFeature is a valid Feature
+    const validFeatures: Feature[] = ['notes', 'files', 'timer', 'tasks', 'polls', 'whiteboard', 'youtube', 'chat'];
+    const feature = validFeatures.includes(activeFeature) ? activeFeature : 'notes';
+
+    switch (feature) {
       case 'notes':
         return <CollaborativeNotes roomId={roomId || ''} />;
       case 'chat':
