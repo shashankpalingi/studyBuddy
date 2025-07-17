@@ -600,7 +600,86 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
     }
   };
   
-  // Modify callPeer to be more robust
+  // Improved video stream handling function
+  const safelyLoadVideoStream = (peerId: string, remoteStream: MediaStream) => {
+    const videoElement = peerVideoRefs.current[peerId];
+    if (!videoElement) {
+      console.warn(`No video element found for peer ${peerId}`);
+      return;
+    }
+
+    // Cancel any existing play requests
+    if (videoElement.play && typeof videoElement.play === 'function') {
+      videoElement.pause();
+    }
+
+    // Clear any existing source
+    if (videoElement.srcObject) {
+      const tracks = (videoElement.srcObject as MediaStream).getTracks();
+      tracks.forEach(track => track.stop());
+    }
+
+    // Set new stream with careful handling
+    videoElement.srcObject = null;
+    
+    // Small delay to ensure clean state
+    setTimeout(() => {
+      try {
+        videoElement.srcObject = remoteStream;
+        videoElement.muted = true;
+
+        // Comprehensive play attempt with multiple fallbacks
+        const playWithFallbacks = (attempts = 0) => {
+          if (attempts >= 3) {
+            console.error(`Failed to play video for peer ${peerId} after multiple attempts`);
+            setConnectionStatus(prev => ({
+              ...prev,
+              [peerId]: 'error'
+            }));
+            return;
+          }
+
+          const playPromise = videoElement.play();
+          
+          if (playPromise) {
+            playPromise
+              .then(() => {
+                console.log(`Successfully played video for peer ${peerId}`);
+                setConnectionStatus(prev => ({
+                  ...prev,
+                  [peerId]: 'connected'
+                }));
+              })
+              .catch((err) => {
+                console.warn(`Play attempt ${attempts + 1} failed for peer ${peerId}:`, err);
+                
+                // Different handling based on error type
+                if (err.name === 'AbortError' || err.name === 'NotAllowedError') {
+                  // Wait a bit and retry
+                  setTimeout(() => playWithFallbacks(attempts + 1), 500 * (attempts + 1));
+                } else {
+                  // For other errors, mark as connection error
+                  setConnectionStatus(prev => ({
+                    ...prev,
+                    [peerId]: 'error'
+                  }));
+                }
+              });
+          }
+        };
+
+        playWithFallbacks();
+      } catch (setupErr) {
+        console.error(`Error setting up video stream for peer ${peerId}:`, setupErr);
+        setConnectionStatus(prev => ({
+          ...prev,
+          [peerId]: 'error'
+        }));
+      }
+    }, 100);
+  };
+
+  // Modify callPeer to use new video loading method
   const callPeer = (peerId: string) => {
     if (!peerRef.current || !streamRef.current) return;
     
@@ -626,24 +705,12 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
       // Update connection status
       setConnectionStatus(prev => ({
         ...prev,
-        [peerId]: 'connected'
+        [peerId]: 'connecting'
       }));
       
-      // Attach stream to video element
+      // Use improved stream loading
       setTimeout(() => {
-        const videoElement = peerVideoRefs.current[peerId];
-        if (videoElement) {
-          videoElement.srcObject = remoteStream;
-          videoElement.muted = true; // Initially muted
-          
-          videoElement.play().catch(err => {
-            console.error(`Error playing video for peer ${peerId}:`, err);
-            setConnectionStatus(prev => ({
-              ...prev,
-              [peerId]: 'error'
-            }));
-          });
-        }
+        safelyLoadVideoStream(peerId, remoteStream);
       }, 500);
     });
     
