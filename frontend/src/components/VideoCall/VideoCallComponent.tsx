@@ -405,26 +405,33 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
     }
   }, [roomId]);
   
-  // Connect to active callers when they join
+  // Connect to active callers when they join (simplified)
   useEffect(() => {
     const connectToNewCallers = async () => {
       if (!peerRef.current || !streamRef.current || !myPeerId || !currentUser) return;
       
-      // Find callers that we haven't connected to yet
-      const newCallers = activeCallers.filter(caller => 
-        caller.userId !== currentUser.uid && // Not ourselves
-        !connectedPeers.includes(caller.peerId) && // Not already connected
-        !Object.keys(peerConnections.current).includes(caller.peerId) // Not in our connections
+      // Unique set of callers to connect to
+      const uniqueCallers = new Set(
+        activeCallers
+          .filter(caller => 
+            caller.userId !== currentUser.uid && // Not ourselves
+            !connectedPeers.includes(caller.peerId) // Not already connected
+          )
+          .map(caller => caller.peerId)
       );
       
-      // Connect to each new caller
-      newCallers.forEach(caller => {
-        console.log(`Initiating call to peer: ${caller.peerId}`);
-        setConnectionStatus(prev => ({
-          ...prev,
-          [caller.peerId]: 'calling'
-        }));
-        callPeer(caller.peerId);
+      // Connect to each unique caller
+      uniqueCallers.forEach(peerId => {
+        console.log(`Initiating call to unique peer: ${peerId}`);
+        
+        // Prevent duplicate calls
+        if (!peerConnections.current[peerId]) {
+          setConnectionStatus(prev => ({
+            ...prev,
+            [peerId]: 'calling'
+          }));
+          callPeer(peerId);
+        }
       });
     };
     
@@ -593,25 +600,28 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
     }
   };
   
+  // Modify callPeer to be more robust
   const callPeer = (peerId: string) => {
     if (!peerRef.current || !streamRef.current) return;
     
+    // Prevent duplicate calls
+    if (peerConnections.current[peerId]) {
+      console.warn(`Already have a connection to peer ${peerId}`);
+      return;
+    }
+    
     const call = peerRef.current.call(peerId, streamRef.current);
+    
+    // Store the connection immediately
+    peerConnections.current[peerId] = call;
     
     call.on('stream', (remoteStream) => {
       console.log(`Received stream from called peer: ${peerId}`);
       
-      if (!connectedPeers.includes(peerId)) {
-        setConnectedPeers(prev => [...prev, peerId]);
-        
-        // If this is the first peer and we don't have a focused peer yet, focus on them
-        if (connectedPeers.length === 0 && !focusedPeerId) {
-          setFocusedPeerId(peerId);
-        }
-      }
-      
-      // Store the connection
-      peerConnections.current[peerId] = call;
+      // Ensure we don't add duplicate peers
+      setConnectedPeers(prev => 
+        prev.includes(peerId) ? prev : [...prev, peerId]
+      );
       
       // Update connection status
       setConnectionStatus(prev => ({
@@ -619,70 +629,32 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
         [peerId]: 'connected'
       }));
       
-      // More reliable approach to attach the stream to the video element
+      // Attach stream to video element
       setTimeout(() => {
         const videoElement = peerVideoRefs.current[peerId];
         if (videoElement) {
-          // Only set srcObject if it's not already set to avoid unnecessary reload
-          if (videoElement.srcObject !== remoteStream) {
-            videoElement.srcObject = remoteStream;
-            // Initially muted to help with autoplay
-            videoElement.muted = true;
-            
-            // Use play() with catch, retry logic and max attempts
-            const attemptPlay = (attempts = 0, delay = 200) => {
-              if (attempts >= 5) {
-                console.warn(`Max retry attempts reached for peer ${peerId}`);
-                setConnectionStatus(prev => ({
-                  ...prev,
-                  [peerId]: 'error'
-                }));
-                return;
-              }
-              
-              videoElement.play()
-                .catch(err => {
-                  if (err.name === 'AbortError' && attempts < 5) {
-                    console.warn(`Play was aborted for peer ${peerId} (attempt ${attempts+1}/5), retrying in ${delay}ms`);
-                    setTimeout(() => attemptPlay(attempts + 1, delay * 1.5), delay);
-                  } else {
-                    console.error("Error playing remote video:", err);
-                    setConnectionStatus(prev => ({
-                      ...prev,
-                      [peerId]: 'error'
-                    }));
-                  }
-                });
-            };
-            
-            attemptPlay();
-          }
+          videoElement.srcObject = remoteStream;
+          videoElement.muted = true; // Initially muted
+          
+          videoElement.play().catch(err => {
+            console.error(`Error playing video for peer ${peerId}:`, err);
+            setConnectionStatus(prev => ({
+              ...prev,
+              [peerId]: 'error'
+            }));
+          });
         }
-      }, 500); // Increased timeout for better DOM stability
+      }, 500);
     });
     
     call.on('close', () => {
-      console.log(`Call closed with called peer: ${peerId}`);
-      setConnectedPeers(prev => prev.filter(id => id !== peerId));
-      
-      // If this was the focused peer, reset focused peer
-      if (focusedPeerId === peerId) {
-        setFocusedPeerId(null);
-      }
-      
-      delete peerConnections.current[peerId];
-      setConnectionStatus(prev => ({
-        ...prev,
-        [peerId]: 'disconnected'
-      }));
+      console.log(`Call closed with peer: ${peerId}`);
+      handlePeerDisconnect(peerId);
     });
     
     call.on('error', (err) => {
-      console.error(`Call error with called peer ${peerId}:`, err);
-      setConnectionStatus(prev => ({
-        ...prev,
-        [peerId]: 'error'
-      }));
+      console.error(`Call error with peer ${peerId}:`, err);
+      handlePeerDisconnect(peerId);
     });
   };
   
@@ -843,6 +815,20 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
   const handlePeerDisconnect = (peerId: string) => {
     console.log(`Handling disconnect for peer: ${peerId}`);
     
+    // Prevent multiple disconnection attempts
+    if (!peerConnections.current[peerId]) {
+      console.warn(`Peer ${peerId} already disconnected`);
+      return;
+    }
+    
+    // Close the specific peer connection
+    try {
+      const peerConnection = peerConnections.current[peerId];
+      peerConnection.close();
+    } catch (err) {
+      console.warn(`Error closing connection for peer ${peerId}:`, err);
+    }
+    
     // Remove from connected peers
     setConnectedPeers(prev => prev.filter(id => id !== peerId));
     
@@ -851,6 +837,10 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
     
     // Remove video ref
     if (peerVideoRefs.current[peerId]) {
+      const videoElement = peerVideoRefs.current[peerId];
+      if (videoElement) {
+        videoElement.srcObject = null;
+      }
       delete peerVideoRefs.current[peerId];
     }
     
