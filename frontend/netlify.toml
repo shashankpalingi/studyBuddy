@@ -13,3 +13,8 @@
 
 [build.environment]
   NODE_VERSION = "18.19.1" 
+
+[context.production.environment]
+  VITE_TURN_USERNAME = "studybuddy"
+  VITE_TURN_PASSWORD = "your-secure-turn-password"
+  VITE_TURN_SERVER = "turn.studybuddy.com" 

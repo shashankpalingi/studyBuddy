@@ -24,14 +24,29 @@ export interface PeerConfig {
   iceServers: Array<{ urls: string | string[] }>;
 }
 
-// Default peer configuration
+// Default peer configuration with multiple STUN/TURN servers
 export const DEFAULT_PEER_CONFIG: PeerConfig = {
   iceServers: [
+    // Google's public STUN servers
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
     { urls: 'stun:stun2.l.google.com:19302' },
     { urls: 'stun:stun3.l.google.com:19302' },
-    { urls: 'stun:stun4.l.google.com:19302' }
+    { urls: 'stun:stun4.l.google.com:19302' },
+
+    // Twilio STUN servers
+    { urls: 'stun:global.stun.twilio.com:3478' },
+
+    // Fallback TURN servers (replace with your own TURN server details)
+    {
+      urls: [
+        'turn:turn.studybuddy.com:3478?transport=udp',
+        'turn:turn.studybuddy.com:3478?transport=tcp',
+        'turn:turn.studybuddy.com:443?transport=tcp'
+      ],
+      username: import.meta.env.VITE_TURN_USERNAME || '',
+      credential: import.meta.env.VITE_TURN_PASSWORD || ''
+    }
   ]
 };
 

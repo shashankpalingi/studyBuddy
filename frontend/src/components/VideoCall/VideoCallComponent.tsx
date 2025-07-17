@@ -175,6 +175,52 @@ const VideoCallComponent: React.FC<VideoCallProps> = ({ roomId, onEndCall }) => 
     }
   }, [streamRef.current, myVideoRef.current]);
   
+  // Create peer connection with enhanced configuration
+  const createPeerConnection = () => {
+    const configuration: RTCConfiguration = {
+      iceServers: DEFAULT_PEER_CONFIG.iceServers,
+      iceTransportPolicy: 'relay', // Force relay for more consistent connections
+      bundlePolicy: 'max-bundle', // Optimize bandwidth usage
+      rtcpMuxPolicy: 'require', // Require multiplexing for efficiency
+    };
+
+    try {
+      const peerConnection = new RTCPeerConnection(configuration);
+      
+      // Add ICE candidate handling
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          console.log('ICE candidate:', event.candidate.type, event.candidate.protocol);
+        }
+      };
+
+      // Log ICE connection state changes
+      peerConnection.oniceconnectionstatechange = () => {
+        console.log('ICE connection state:', peerConnection.iceConnectionState);
+        
+        switch (peerConnection.iceConnectionState) {
+          case 'checking':
+            console.log('Attempting to establish connection...');
+            break;
+          case 'connected':
+            console.log('Peer connection established successfully');
+            break;
+          case 'disconnected':
+            console.warn('Peer connection disconnected');
+            break;
+          case 'failed':
+            console.error('Peer connection failed');
+            break;
+        }
+      };
+
+      return peerConnection;
+    } catch (err) {
+      console.error('Error creating peer connection:', err);
+      return null;
+    }
+  };
+
   // Create peer connection
   useEffect(() => {
     if (!currentUser || !roomId) return;
