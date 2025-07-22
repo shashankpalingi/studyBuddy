@@ -15,7 +15,7 @@ const Footer = () => {
 
   return (
     <footer className="w-full h-auto relative overflow-hidden">
-      <div className="w-full overflow-hidden" style={{ maxHeight: "500px" }}>
+      <div className="w-full overflow-hidden" style={{ maxHeight: "420px" }}>
         <img 
           src="/footer.gif" 
           alt="Footer animated background" 
@@ -35,9 +35,9 @@ const Footer = () => {
           }}
         >
           <h2 
-            className="text-2xl text-white tracking-wider mb-6" 
+            className="text-3xl text-white tracking-wider mb-6" 
             style={{ 
-              color:"beige",
+              color:"pink",
               fontFamily: "'Press Start 2P', cursive",
               textShadow: "2px 2px 4px rgba(0,0,0,3.0)",
               whiteSpace: "nowrap"
