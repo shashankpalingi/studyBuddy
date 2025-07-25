@@ -258,9 +258,9 @@ const StudyRooms: React.FC = () => {
           </div>
           
           {room.tags && room.tags.length > 0 && (
-            <div className="room-tags">
+            <div className="room-tags flex justify-center gap-2 pb-4">
               {room.tags.map((tag, index) => (
-                <span key={index} className="room-tag" style={{ fontWeight: 600 }}>
+                <span key={index} className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
                   {tag}
                 </span>
               ))}

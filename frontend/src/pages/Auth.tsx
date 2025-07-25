@@ -141,6 +141,9 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen w-screen relative overflow-hidden flex custom-cursor-page">
+      {/* Preload background image */}
+      <link rel="preload" href="/authbg.jpg" as="image" />
+
       {/* Back button */}
       <motion.button
         initial={{ opacity: 0, x: -20 }}
@@ -160,7 +163,10 @@ const Auth = () => {
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          imageRendering: 'high-quality'
+          imageRendering: 'high-quality',
+          willChange: 'background-image',
+          opacity: 1,
+          transition: 'opacity 0.3s ease-in-out'
         }}
       />
       

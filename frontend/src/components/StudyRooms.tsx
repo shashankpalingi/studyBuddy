@@ -168,11 +168,11 @@ const StudyRooms: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap justify-center gap-2 mb-4 pb-4">
             {room.tags?.slice(0, 3).map((tag, index) => (
               <span 
                 key={index} 
-                className="bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded-full"
+                className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full"
               >
                 {tag}
               </span>
