@@ -98,11 +98,10 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 🌐 Contact
 
-Project Link: [[https://github.com/your-username/study-buddy](https://studybuddy08.netlify.app/)](https://github.com/your-username/study-buddy)
+Project Link: [[https://github.com/your-username/study-buddy](https://studybuddy08.netlify.app/)]
 
 ---
 
 <div align="center">
   <b>Built with ❤️ by the Study Buddy Team</b><br>
-  MIT Licensed
 </div> 
