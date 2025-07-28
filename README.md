@@ -1,78 +1,111 @@
-# 🚀 StudyBuddy: Your Ultimate Collaborative Learning Platform
+# Study Buddy: Revolutionizing Collaborative Learning 🚀
 
-## 🌟 Revolutionizing Student Collaboration
+<div align="center">
+  <img src="frontend/public/landingpage.jpeg" alt="Study Buddy Landing Page" width="100%">
+  
+  [![React](https://img.shields.io/badge/React-19-blue?logo=react)](https://react.dev/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)](https://www.typescriptlang.org/)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-blueviolet?logo=tailwind-css)](https://tailwindcss.com/)
+  [![Firebase](https://img.shields.io/badge/Firebase-Authentication-orange?logo=firebase)](https://firebase.google.com/)
+  [![Netlify](https://img.shields.io/badge/Netlify-Deploy-blue?logo=netlify)](https://www.netlify.com/)
+</div>
 
-StudyBuddy is not just another study app—it's a comprehensive learning ecosystem designed to transform how students connect, learn, and grow together. Whether you're preparing for exams, working on group projects, or seeking interactive study experiences, StudyBuddy has you covered.
+## 🌟 Our Vision
 
-### 🎯 Our Mission
+**Transforming Learning Together** - Study Buddy is more than just an app; it's a collaborative learning ecosystem designed to make studying engaging, efficient, and enjoyable. From group study sessions to real-time collaboration, we're revolutionizing how students learn and interact.
 
-In a world where learning is increasingly digital, StudyBuddy bridges the gap between traditional studying and modern collaborative tools. We believe that learning is most effective when it's interactive, engaging, and community-driven.
+## 🎯 Key Features
 
-## 🔥 Standout Features
+### 🤝 Collaborative Learning
+- **Real-time Study Rooms**: Create and join study groups
+- **Collaborative Notes**: Shared note-taking with real-time updates
+- **Group Discussions**: Chat and communicate while studying
 
-### 🤝 Collaborative Learning Toolkit
-- **Video Calls**: Face-to-face study sessions from anywhere
-- **Real-time Chat Rooms**: Instant communication with study groups
-- **Collaborative Whiteboard**: Brainstorm and solve problems together
-- **File Sharing**: Seamlessly exchange study materials
-- **YouTube Watch Together**: Learn from educational content in sync
-- **Study Timer**: Stay focused and track productivity
-- **Task Manager**: Organize your academic workflow
-- **Interactive Poll System**: Engage and quiz each other
-- **AI Study Assistant**: Personalized learning support
+### 🕒 Productivity Tools
+- **Study Timer**: Pomodoro-style time management
+- **Task Manager**: Track and manage your study tasks
+- **Poll System**: Create quick polls for group decision-making
 
-## 🛠 Tech Stack
+### 🎥 Interactive Features
+- **Video Call Integration**: Seamless video communication
+- **YouTube Watch Together**: Synchronize video watching
+- **Whiteboard**: Collaborative drawing and brainstorming
 
-### Frontend
-![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+## 🚀 Tech Stack
 
-### Backend
-![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
+- **Frontend**: React 19, TypeScript, Tailwind CSS
+- **Backend**: Firebase Authentication and Firestore
+- **Deployment**: Netlify
+- **State Management**: React Contexts
+- **UI Components**: Shadcn/ui
 
-## 🚀 Quick Start
+## 🏗️ Project Structure
 
-### Frontend Setup
+```
+study-buddy/
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── contexts/
+│   │   ├── hooks/
+│   │   ├── pages/
+│   │   └── services/
+├── backend/
+│   └── firebase/
+└── README.md
+```
+
+## 🎮 Quick Start
+
+### Prerequisites
+- Node.js (v18+)
+- npm or bun
+- Firebase Account
+
+### Installation
+
+1. Clone the repository
 ```bash
-# Navigate to frontend directory
+git clone https://github.com/your-username/study-buddy.git
+cd study-buddy
+```
+
+2. Install dependencies
+```bash
 cd frontend
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
+npm install  # or bun install
 ```
 
-### Backend Setup
+3. Set up Firebase
+- Create a Firebase project
+- Add your Firebase configuration to `src/lib/firebase.ts`
+
+4. Run the development server
 ```bash
-# Navigate to backend directory
-cd backend
-
-# Install dependencies
-npm install
-
-# Deploy Firebase rules
-npm run deploy:all
+npm run dev  # or bun run dev
 ```
 
-## 🤔 Why StudyBuddy?
+## 🤝 Contributing
 
-- **Seamless Collaboration**: Break geographical barriers
-- **Productivity Boost**: Integrated tools to enhance learning
-- **Community-Driven**: Learn from and with your peers
-- **Flexible**: Adapts to your unique study style
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## 🌈 Contributing
-
-Passionate about education technology? We'd love your help! Check out our contribution guidelines (coming soon).
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-[Your License Here - e.g., MIT]
+Distributed under the MIT License.
+
+## 🌐 Contact
+
+Project Link: [https://github.com/your-username/study-buddy](https://github.com/your-username/study-buddy)
 
 ---
 
-**Made with ❤️ by Students, For Students**
+<div align="center">
+  <b>Built with ❤️ by the Study Buddy Team</b><br>
+  MIT Licensed
+</div> 
