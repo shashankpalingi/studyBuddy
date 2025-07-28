@@ -37,7 +37,7 @@ const Footer = () => {
           <h2 
             className="text-3xl text-white tracking-wider mb-6" 
             style={{ 
-              color:"pink",
+              color:"white",
               fontFamily: "'Press Start 2P', cursive",
               textShadow: "2px 2px 4px rgba(0,0,0,3.0)",
               whiteSpace: "nowrap"
