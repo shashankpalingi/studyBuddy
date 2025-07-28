@@ -101,7 +101,7 @@ Distributed under the MIT License.
 
 ## 🌐 Contact
 
-Project Link: [https://github.com/your-username/study-buddy](https://github.com/your-username/study-buddy)
+Project Link: [https://studybuddy08.netlify.app/](https://studybuddy08.netlify.app/)
 
 ---
 
