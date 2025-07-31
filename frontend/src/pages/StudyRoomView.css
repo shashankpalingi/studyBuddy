@@ -1215,15 +1215,17 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .sidebar-action-btn.delete-btn {
-  background: rgba(255, 77, 77, 0.2);
-  color: #992b2b;
-  border: 1px solid rgba(255, 77, 77, 0.4);
-  box-shadow: 0 4px 8px rgba(255, 77, 77, 0.1);
+  background: rgba(255, 77, 77, 0.5); /* Increased opacity */
+  color: white; /* Changed text color to white for better contrast */
+  border: 1px solid rgba(255, 77, 77, 0.7); /* More visible border */
+  box-shadow: 0 4px 12px rgba(255, 77, 77, 0.3); /* Enhanced shadow */
+  transition: all 0.3s ease;
 }
 
 .sidebar-action-btn.delete-btn:hover {
-  background: rgba(255, 77, 77, 0.3);
-  box-shadow: 0 4px 12px rgba(255, 77, 77, 0.15);
+  background: rgba(255, 77, 77, 0.7); /* Darker background on hover */
+  box-shadow: 0 6px 16px rgba(255, 77, 77, 0.4); /* Larger shadow on hover */
+  transform: translateY(-3px); /* Slight lift effect */
 }
 
 /* Floating Chat Button */
