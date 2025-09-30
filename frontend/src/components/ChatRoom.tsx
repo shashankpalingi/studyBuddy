@@ -1,21 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { 
-  collection, 
-  addDoc, 
-  serverTimestamp, 
-  query, 
-  orderBy, 
-  onSnapshot, 
-  limit, 
+import React, { useState, useEffect, useRef } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  orderBy,
+  onSnapshot,
+  limit,
   Timestamp,
   doc,
-  setDoc
-} from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import './ChatRoom.css';
-import { Video, Image, Phone, Users } from 'lucide-react';
-import VideoCallComponent from './VideoCall';
+  setDoc,
+} from "firebase/firestore";
+import { db } from "../lib/firebase";
+import "./ChatRoom.css";
+import { Video, Image, Phone, Users } from "lucide-react";
+import VideoCallComponent from "./VideoCall";
 
 interface Message {
   id: string;
@@ -33,49 +33,49 @@ interface ChatRoomProps {
 
 const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
   const { currentUser, userProfile } = useAuth();
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [showVideoCall, setShowVideoCall] = useState(false);
   const [isInVideoCall, setIsInVideoCall] = useState(false);
   const [hasActiveCall, setHasActiveCall] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-  
+
   // Check for active calls in the room
   useEffect(() => {
     if (!roomId) return;
-    
+
     // Import dynamically to avoid circular dependencies
-    import('./VideoCall/VideoCallService').then(({ VideoCallService }) => {
+    import("./VideoCall/VideoCallService").then(({ VideoCallService }) => {
       // Initial check - silently handle errors
       VideoCallService.hasActiveCall(roomId)
-        .then(hasCall => setHasActiveCall(hasCall))
-        .catch(err => {
-          console.error('Error checking for active calls:', err);
+        .then((hasCall) => setHasActiveCall(hasCall))
+        .catch((err) => {
+          console.error("Error checking for active calls:", err);
           // Keep hasActiveCall as false and continue
         });
-      
+
       // Try to subscribe to active callers
       try {
         const unsubscribe = VideoCallService.subscribeToActiveCallers(
           roomId,
           (activeCallers) => {
             setHasActiveCall(activeCallers.length > 0);
-          }
+          },
         );
-        
+
         return () => {
           try {
             unsubscribe();
           } catch (err) {
-            console.error('Error unsubscribing from active callers:', err);
+            console.error("Error unsubscribing from active callers:", err);
           }
         };
       } catch (err) {
-        console.error('Error subscribing to active callers:', err);
+        console.error("Error subscribing to active callers:", err);
         // Return empty cleanup function if subscription fails
         return () => {};
       }
@@ -87,30 +87,34 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
     if (!roomId) return;
 
     setIsLoading(true);
-    const messagesRef = collection(db, 'studyRooms', roomId, 'messages');
-    const q = query(messagesRef, orderBy('createdAt', 'asc'), limit(100));
+    const messagesRef = collection(db, "studyRooms", roomId, "messages");
+    const q = query(messagesRef, orderBy("createdAt", "asc"), limit(100));
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      try {
-        const loadedMessages: Message[] = [];
-        snapshot.forEach((doc) => {
-          loadedMessages.push({
-            id: doc.id,
-            ...doc.data()
-          } as Message);
-        });
-        setMessages(loadedMessages);
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        try {
+          const loadedMessages: Message[] = [];
+          snapshot.forEach((doc) => {
+            loadedMessages.push({
+              id: doc.id,
+              ...doc.data(),
+            } as Message);
+          });
+          setMessages(loadedMessages);
+          setIsLoading(false);
+        } catch (err) {
+          console.error("Error loading messages:", err);
+          setError("Failed to load messages");
+          setIsLoading(false);
+        }
+      },
+      (err) => {
+        console.error("Error subscribing to messages:", err);
+        setError("Failed to subscribe to chat messages");
         setIsLoading(false);
-      } catch (err) {
-        console.error('Error loading messages:', err);
-        setError('Failed to load messages');
-        setIsLoading(false);
-      }
-    }, (err) => {
-      console.error('Error subscribing to messages:', err);
-      setError('Failed to subscribe to chat messages');
-      setIsLoading(false);
-    });
+      },
+    );
 
     return () => unsubscribe();
   }, [roomId]);
@@ -121,36 +125,36 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
   }, [messages]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!message.trim() || !currentUser || !roomId) return;
-    
+
     try {
-      const messagesRef = collection(db, 'studyRooms', roomId, 'messages');
+      const messagesRef = collection(db, "studyRooms", roomId, "messages");
       await addDoc(messagesRef, {
         text: message,
         userId: currentUser.uid,
-        userName: userProfile?.displayName || 'Anonymous',
+        userName: userProfile?.displayName || "Anonymous",
         userPhotoURL: userProfile?.photoURL || null,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
       });
-      
-      setMessage('');
+
+      setMessage("");
     } catch (err) {
-      console.error('Error sending message:', err);
-      setError('Failed to send message');
+      console.error("Error sending message:", err);
+      setError("Failed to send message");
     }
   };
 
   const formatTime = (timestamp: Timestamp) => {
-    if (!timestamp) return '';
-    
+    if (!timestamp) return "";
+
     const date = timestamp.toDate();
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   const handleImageClick = () => {
@@ -160,41 +164,41 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !currentUser || !roomId) return;
-    
+
     // Only accept images
-    if (!file.type.startsWith('image/')) {
-      setError('Only image files are supported.');
+    if (!file.type.startsWith("image/")) {
+      setError("Only image files are supported.");
       return;
     }
-    
+
     try {
       setUploadingImage(true);
-      
-      // Simple placeholder for upload - in a real app, upload to Cloudinary or Firebase Storage
+
+      // Simple placeholder for upload - in a real app, upload to Supabase Storage
       // For now we'll use a data URL for the demo
       const reader = new FileReader();
       reader.onload = async (event) => {
         const imageUrl = event.target?.result as string;
-        
+
         // Send message with image
-        const messagesRef = collection(db, 'studyRooms', roomId, 'messages');
+        const messagesRef = collection(db, "studyRooms", roomId, "messages");
         await addDoc(messagesRef, {
-          text: message || '📷 Image',
+          text: message || "📷 Image",
           userId: currentUser.uid,
-          userName: userProfile?.displayName || 'Anonymous',
+          userName: userProfile?.displayName || "Anonymous",
           userPhotoURL: userProfile?.photoURL || null,
           createdAt: serverTimestamp(),
-          imageUrl
+          imageUrl,
         });
-        
-        setMessage('');
+
+        setMessage("");
         setUploadingImage(false);
       };
-      
+
       reader.readAsDataURL(file);
     } catch (err) {
-      console.error('Error uploading image:', err);
-      setError('Failed to upload image');
+      console.error("Error uploading image:", err);
+      setError("Failed to upload image");
       setUploadingImage(false);
     }
   };
@@ -214,10 +218,12 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
       <div className="chat-header">
         <h2>Group Chat</h2>
         <div className="chat-actions">
-          <button 
-            className={`chat-action-btn ${hasActiveCall && !isInVideoCall ? 'active-call' : ''}`}
+          <button
+            className={`chat-action-btn ${hasActiveCall && !isInVideoCall ? "active-call" : ""}`}
             onClick={handleVideoCall}
-            title={hasActiveCall ? "Join active video call" : "Start video call"}
+            title={
+              hasActiveCall ? "Join active video call" : "Start video call"
+            }
           >
             {hasActiveCall && !isInVideoCall ? (
               <>
@@ -230,17 +236,14 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
           </button>
         </div>
       </div>
-      
+
       {/* Video Call Overlay */}
       {isInVideoCall && (
         <div className="video-call-wrapper">
-          <VideoCallComponent 
-            roomId={roomId} 
-            onEndCall={endVideoCall}
-          />
+          <VideoCallComponent roomId={roomId} onEndCall={endVideoCall} />
         </div>
       )}
-      
+
       {!isInVideoCall && (
         <>
           <div className="chat-messages">
@@ -249,12 +252,14 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
             ) : error ? (
               <div className="chat-error">{error}</div>
             ) : messages.length === 0 ? (
-              <div className="chat-empty">No messages yet. Start the conversation!</div>
+              <div className="chat-empty">
+                No messages yet. Start the conversation!
+              </div>
             ) : (
               messages.map((msg) => (
-                <div 
-                  key={msg.id} 
-                  className={`chat-message ${msg.userId === currentUser?.uid ? 'own-message' : ''}`}
+                <div
+                  key={msg.id}
+                  className={`chat-message ${msg.userId === currentUser?.uid ? "own-message" : ""}`}
                 >
                   <div className="message-avatar">
                     {msg.userPhotoURL ? (
@@ -268,7 +273,9 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
                   <div className="message-content">
                     <div className="message-header">
                       <span className="message-author">{msg.userName}</span>
-                      <span className="message-time">{formatTime(msg.createdAt)}</span>
+                      <span className="message-time">
+                        {formatTime(msg.createdAt)}
+                      </span>
                     </div>
                     <div className="message-text">{msg.text}</div>
                     {msg.imageUrl && (
@@ -282,9 +289,9 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
             )}
             <div ref={messagesEndRef} />
           </div>
-          
+
           <form className="chat-input-form" onSubmit={handleSendMessage}>
-            <button 
+            <button
               className="chat-action-btn attach-button"
               onClick={handleImageClick}
               title="Attach image"
@@ -299,25 +306,25 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
               placeholder="Type your message..."
               disabled={!currentUser || uploadingImage}
             />
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              style={{ display: 'none' }} 
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: "none" }}
               accept="image/*"
               onChange={handleFileChange}
             />
-            <button 
+            <button
               className="chat-action-btn emoji-button"
               title="Emoji"
               type="button"
             >
               😀
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={!message.trim() || !currentUser || uploadingImage}
             >
-              {uploadingImage ? 'Uploading...' : 'Send'}
+              {uploadingImage ? "Uploading..." : "Send"}
             </button>
           </form>
         </>
@@ -326,4 +333,4 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ roomId }) => {
   );
 };
 
-export default ChatRoom; 
+export default ChatRoom;

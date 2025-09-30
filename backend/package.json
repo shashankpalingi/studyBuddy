@@ -1,13 +1,15 @@
 {
   "name": "studybuddy-backend",
   "version": "1.0.0",
-  "description": "StudyBuddy backend with Firebase",
+  "description": "StudyBuddy backend with Firebase and Supabase",
   "main": "index.js",
   "scripts": {
     "deploy:rules": "firebase deploy --only firestore:rules",
     "deploy:indexes": "firebase deploy --only firestore:indexes",
     "deploy:storage": "firebase deploy --only storage",
-    "deploy:all": "firebase deploy --only firestore,storage"
+    "deploy:firebase": "firebase deploy --only firestore,storage",
+    "setup:supabase": "echo 'Run the SQL commands in supabase/storage-config.sql in your Supabase dashboard'",
+    "deploy:all": "npm run deploy:firebase && npm run setup:supabase"
   },
   "dependencies": {
     "firebase-admin": "^11.10.1",
@@ -16,4 +18,4 @@
   "devDependencies": {
     "firebase-tools": "^12.6.2"
   }
-} 
+}

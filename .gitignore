@@ -40,6 +40,12 @@ yarn-error.log*
 # Firebase
 .firebase/
 
+# Supabase
+.supabase/
+backend/supabase/.env
+backend/supabase/supabase-config.toml
+.env.supabase
+
 # Local Netlify folder
 .netlify
 
@@ -48,5 +54,9 @@ yarn-error.log*
 *.lock
 .cache
 
+# Database dumps
+*.sql.backup
+*.db
+
 # Original project directory - to be removed after migration
-studybuddy-connect-learn/ 
+studybuddy-connect-learn/
