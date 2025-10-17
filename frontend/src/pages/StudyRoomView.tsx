@@ -12,6 +12,7 @@ import YoutubeWatchTogether from "../components/YoutubeWatchTogether/YoutubeWatc
 import AIChatAssistant from "../components/AI/AIChatAssistant";
 import CodingIDE from "../components/CodingIDE";
 import PdfDiscussion from "../components/PdfDiscussion";
+import VideoRoom from "../components/VideoCall/VideoRoom";
 import { db } from "../lib/firebase";
 import { doc, getDoc, onSnapshot, updateDoc, setDoc } from "firebase/firestore";
 
@@ -37,7 +38,8 @@ type Feature =
   | "chat"
   | "aichat"
   | "codingide"
-  | "pdfs";
+  | "pdfs"
+  | "video";
 
 // Timer mode type
 type TimerMode = "work" | "shortBreak" | "longBreak";
@@ -618,6 +620,7 @@ const StudyRoomView: React.FC = () => {
         "aichat",
         "codingide",
         "pdfs",
+        "video",
       ];
 
       if (savedFeature && validFeatures.includes(savedFeature as Feature)) {
@@ -645,6 +648,7 @@ const StudyRoomView: React.FC = () => {
       "aichat",
       "codingide",
       "pdfs",
+      "video",
     ];
     if (!validFeatures.includes(feature)) {
       console.warn(`Invalid feature: ${feature}. Defaulting to 'notes'.`);
@@ -680,6 +684,7 @@ const StudyRoomView: React.FC = () => {
       "aichat",
       "codingide",
       "pdfs",
+      "video",
     ];
     const feature = validFeatures.includes(activeFeature)
       ? activeFeature
@@ -714,6 +719,8 @@ const StudyRoomView: React.FC = () => {
         return <CodingIDE roomId={roomId || ""} />;
       case "pdfs":
         return <PdfDiscussion roomId={roomId || ""} />;
+      case "video":
+        return <VideoRoom roomId={roomId || ""} />;
       default:
         return <CollaborativeNotes roomId={roomId || ""} />;
     }
@@ -795,8 +802,10 @@ const StudyRoomView: React.FC = () => {
                 ? "Coding IDE"
                 : activeFeature === "pdfs"
                   ? "PDF Discussion"
-                  : activeFeature.charAt(0).toUpperCase() +
-                    activeFeature.slice(1)}
+                  : activeFeature === "video"
+                    ? "Video Conference"
+                    : activeFeature.charAt(0).toUpperCase() +
+                      activeFeature.slice(1)}
           </span>
         </div>
         <div className="nav-right">
@@ -1007,6 +1016,17 @@ const StudyRoomView: React.FC = () => {
               <span className="icon">📄</span>
               {!sidebarMinimized && (
                 <span className="label">PDF Discussion</span>
+              )}
+            </button>
+
+            <button
+              onClick={() => changeActiveFeature("video")}
+              className={`sidebar-btn ${activeFeature === "video" ? "active" : ""}`}
+              title="Video Conference"
+            >
+              <span className="icon">📹</span>
+              {!sidebarMinimized && (
+                <span className="label">Video Conference</span>
               )}
             </button>
 
