@@ -129,3 +129,7 @@ export const deleteFromSupabase = async (filePath: string): Promise<void> => {
       : new Error("Failed to delete file from storage.");
   }
 };
+
+// Convenience exports for easier import compatibility
+export const uploadFile = uploadToSupabase;
+export const deleteFile = deleteFromSupabase;

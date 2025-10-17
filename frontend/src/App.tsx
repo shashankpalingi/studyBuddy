@@ -1,18 +1,19 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from './components/ui/toaster';
-import { SidebarProvider } from './contexts/SidebarContext';
-import Index from './pages/Index';
-import Auth from './pages/Auth';
-import NotFound from './pages/NotFound';
-import ProtectedRoute from './components/ProtectedRoute';
-import Profile from './pages/Profile';
-import StudyRooms from './pages/StudyRooms';
-import CreateRoom from './pages/CreateRoom';
-import StudyRoomView from './pages/StudyRoomView';
-import Admin from './pages/Admin';
-import './App.css';
-import { useState } from 'react';
-import Preloader from './components/ui/preloader';
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "./components/ui/toaster";
+import { SidebarProvider } from "./contexts/SidebarContext";
+import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Profile from "./pages/Profile";
+import StudyRooms from "./pages/StudyRooms";
+import CreateRoom from "./pages/CreateRoom";
+import StudyRoomView from "./pages/StudyRoomView";
+import Admin from "./pages/Admin";
+import CodingIDE from "./pages/CodingIDE";
+import "./App.css";
+import { useState } from "react";
+import Preloader from "./components/ui/preloader";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -20,14 +21,14 @@ function App() {
   return (
     <>
       <Preloader onLoadComplete={() => setIsLoading(false)} />
-      <div className={`${isLoading ? 'hidden' : ''}`}>
+      <div className={`${isLoading ? "hidden" : ""}`}>
         <SidebarProvider>
           <div className="app-container">
             <Toaster />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              
+
               <Route
                 path="/profile"
                 element={
@@ -36,7 +37,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              
+
               <Route
                 path="/study-rooms"
                 element={
@@ -45,7 +46,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              
+
               <Route
                 path="/create-room"
                 element={
@@ -54,7 +55,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              
+
               <Route
                 path="/study-room/:roomId"
                 element={
@@ -72,7 +73,16 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              
+
+              <Route
+                path="/coding-ide"
+                element={
+                  <ProtectedRoute>
+                    <CodingIDE />
+                  </ProtectedRoute>
+                }
+              />
+
               <Route path="/not-found" element={<NotFound />} />
               <Route path="*" element={<Navigate to="/not-found" replace />} />
             </Routes>
