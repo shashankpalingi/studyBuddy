@@ -8,6 +8,11 @@
   [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-blueviolet?logo=tailwind-css)](https://tailwindcss.com/)
   [![Firebase](https://img.shields.io/badge/Firebase-Authentication-orange?logo=firebase)](https://firebase.google.com/)
   [![Netlify](https://img.shields.io/badge/Netlify-Deploy-blue?logo=netlify)](https://www.netlify.com/)
+  <div align="center" style="margin: 30px 0;">
+    <a href="https://studybuddy08.netlify.app/" target="_blank" rel="noopener noreferrer">
+      <img src="https://img.shields.io/badge/EXPLORE_LIVE_DEMO-%234F46E5.svg?style=for-the-badge&logo=react&logoColor=white&labelColor=4F46E5&color=635BFF"               alt="Explore Live Demo" width="300" height="50"/>
+    </a>
+  </div>
 </div>
 
 ## 🌟 Our Vision
@@ -121,13 +126,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 5. Open a Pull Request
 
 
-## 🌐 Contact
-
-Project Link: [https://studybuddy08.netlify.app/](https://studybuddy08.netlify.app/)
-
 ---
 
 <div align="center">
-  <b>Built with ❤️ by the Study Buddy Team</b><br>
+  <b>Built with ❤️ by Shashank</b><br>
   
 </div> 
